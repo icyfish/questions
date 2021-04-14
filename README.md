@@ -1,36 +1,11 @@
-## Questions
+# Learn
+## Node.js
 
-**20201230** 
+- [Node.js 中 exports 和 module.exports 的区别](./Nodejs/module.exports-vs-exports.md)
 
-Q: 使用 TypeScript 完善以下 extend 函数，使得 a, b，c 的类型都能够被推导出来。
+## Modules
+### webpack
 
-```typescript
-function extend(first, second) {
-  return {
-    ...first,
-    ...second
-  };
-}
-const x = extend({ a: 1 }, { b: "text", c: [2, 3] });
-const a = x.a;
-const b = x.b;
-const c = x.c;
-
-```
-
-A:
-```typescript
-function extend<T extends object, U extends object>(first: T, second: U): T & U {
-  const result = <T & U>{};
-  for (let key in first) {
-    (<T>result)[key] = first[key];
-  }
-  for (let key in second) {
-    if (!result.hasOwnProperty(key)) {
-      (<U>result)[key] = second[key];
-    }
-  }
-
-  return result;
-}
-```
+- [libraryTarget 这个配置中的 commonjs 和 commonjs2 有什么区别](./Modules/webpack/commonjs-vs-commonjs2)
+- [为什么 tree-shaking 的功能只有 ECMAScript modules 模块能够支持](./Modules/webpack/tree-shaking-and-modules.md)
+- [Code Splitting 在生产项目中的应用](./Modules/webpack/code-spliting-in-production.md)

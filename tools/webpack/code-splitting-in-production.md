@@ -2,20 +2,21 @@
 
 ## 修改 entry 配置
 
-针对包含多组件的 UI 组件库, 区分入口, 打包为不同的文件, 使用方通过 npm 包路径的方式引入对应的 UI 组件. 
+针对包含多组件的 UI 组件库, 区分入口, 打包为不同的文件, 使用方通过 npm 包路径的方式引入对应的 UI 组件.
 
 **在项目中引入 UI 组件:**
 
 ```js
 // 引入组件
-import SideWidgets from "YourUILib/dist/desktop/SideWidgets/index";
+import SideWidgets from "MyUILib/dist/desktop/SideWidgets/index";
 // 引入样式组件
-import SideWidgetsStyle from "YourUILib/dist/desktop/SideWidgets/style";
+import SideWidgetsStyle from "MyUILib/dist/desktop/SideWidgets/style";
 ```
 
 **webpack 配置:**
-```js 
-// webpack.prod.config.js 
+
+```js
+// webpack.prod.config.js
 const merge = require("webpack-merge");
 const baseConfig = require("./webpack.common.config.js");
 const buildMap = require("./buildMap.json");
@@ -27,10 +28,11 @@ module.exports = merge(baseConfig, {
     path: BUILD_TARGET_PATH,
     filename: "[name].js",
     libraryTarget: "commonjs2"
-  },
+  }
   // ... other configurations
 });
 ```
+
 ```json
 // buildMap.json
 {
@@ -40,7 +42,7 @@ module.exports = merge(baseConfig, {
   "desktop/CouponWithPromoCode/index": "./src/components/desktop/CouponWithPromoCode/index.tsx",
   "desktop/CouponWithPromoCode/style": "./src/components/desktop/CouponWithPromoCode/style.tsx",
   "mobile/CouponWithPromoCode/index": "./src/components/mobile/CouponWithPromoCode/index.tsx",
-  "mobile/CouponWithPromoCode/style": "./src/components/mobile/CouponWithPromoCode/style.tsx",
+  "mobile/CouponWithPromoCode/style": "./src/components/mobile/CouponWithPromoCode/style.tsx"
   // ...
 }
 ```
@@ -67,7 +69,7 @@ module.exports = {
         SideWidgets: {
           name: "SideWidgets",
           test(mod, chunks) {
-            const regex = /YourUILib(\/|\\)dist(\/|\\)desktop(\/|\\)SideWidgets/;
+            const regex = /MyUILib(\/|\\)dist(\/|\\)desktop(\/|\\)SideWidgets/;
             return mod.context.match(regex);
           },
           chunks: "all"
@@ -76,11 +78,53 @@ module.exports = {
     }
   }
 };
-
 ```
 
-## Dynamic Imports 
+## 动态 Imports
 
+```jsx
+import React, { useEffect, useRef, useReducer } from "react";
+
+export default function ChannelBanner() {
+  const SearchBox = useRef(null);
+  const [ignored, forceUpdate] = useReducer(x => x + 1, 0);
+
+  useEffect(() => {
+    import("MyUILib/dist/SearchBox").then(module => {
+      SearchBox.current = module.default;
+      forceUpdate();
+    });
+  }, []);
+
+  const SearchComponent = SearchBox && SearchBox.current;
+
+  return (
+    <>
+      {!SearchComponent && <SearchBoxPlaceholder />}
+      {SearchComponent && <SearchComponent {...props} />}
+    </>
+  );
+}
+
+/**
+ * 组件未加载完成时的占位
+ */
+function SearchBoxPlaceholder() {
+  return (
+    <div className="channel_header_search_box">
+      <div className="channel_header_search_content">
+        <div className="search_input_box">
+          <label className="input_pld"> </label>
+          <input className="search_input" />
+        </div>
+        <div className="search_btn">
+          <i className="icon_search"></i>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
 
 ## Reference
 

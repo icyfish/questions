@@ -2,8 +2,12 @@
 
 - [Other posts](https://icyfish.github.io/posts/archives/)
 
+## JavaScript
+
+- [如何区分 ES6 Class 和普通的函数](./javascript/es6-class-function-diff.md)
 ## React
 
+- [React 如何区分类组件和函数式组件?](https://www.notion.so/byzhang/64594e729b464c6ba6093c5b111b7e16)
 - [90行代码实现React](https://www.notion.so/byzhang/361f5125b8a44569819a110ff9f0b5db) | [Github Repo](https://github.com/icyfish/my-react)
 - [实现自己的 React (fiber, 虚拟DOM等)](https://www.notion.so/byzhang/43b3bec3e45c47caa222a8962c9888a0) | [Github Repo](https://github.com/icyfish/didact)
 
@@ -13,14 +17,14 @@
 - [Chrome开发者工具: 调试 JavaScript (2. 断点)](https://www.notion.so/byzhang/cfde7f54290c41759bb17704d6e2a0d8)
 ## Node.js
 
-- [Node.js 中 exports 和 module.exports 的区别](./Nodejs/module.exports-vs-exports.md)
+- [Node.js 中 exports 和 module.exports 的区别](./nodejs/module.exports-vs-exports.md)
 
-## Modules
+## 工具
 ### webpack
 
-- [libraryTarget 这个配置中的 commonjs 和 commonjs2 有什么区别](./Modules/webpack/commonjs-vs-commonjs2.md)
-- [为什么 tree-shaking 的功能只有 ECMAScript modules 模块能够支持](./Modules/webpack/tree-shaking-and-modules.md)
-- [Code Splitting 在生产项目中的应用](./Modules/webpack/code-splitting-in-production.md)
+- [libraryTarget 这个配置中的 commonjs 和 commonjs2 有什么区别](./tools/webpack/commonjs-vs-commonjs2.md)
+- [为什么 tree-shaking 的功能只有 ECMAScript modules 模块能够支持](./tools/webpack/tree-shaking-and-modules.md)
+- [Code Splitting 在生产项目中的应用](./tools/webpack/code-splitting-in-production.md)
 
 ## 文档翻译
 

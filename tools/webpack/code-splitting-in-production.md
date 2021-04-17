@@ -1,3 +1,15 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  
+
+- [Code Splitting 在生产项目中的应用](#code-splitting-在生产项目中的应用)
+  - [修改 entry 配置](#修改-entry-配置)
+  - [使用 SplitChunksPlugin 拆分文件](#使用-splitchunksplugin-拆分文件)
+  - [动态 Imports](#动态-imports)
+  - [Reference](#reference)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Code Splitting 在生产项目中的应用
 
 ## 修改 entry 配置

@@ -1,3 +1,14 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  
+
+- [为什么 tree-shaking 的功能只有 ECMAScript modules 模块能够支持](#%E4%B8%BA%E4%BB%80%E4%B9%88-tree-shaking-%E7%9A%84%E5%8A%9F%E8%83%BD%E5%8F%AA%E6%9C%89-ecmascript-modules-%E6%A8%A1%E5%9D%97%E8%83%BD%E5%A4%9F%E6%94%AF%E6%8C%81)
+  - [静态模块结构](#%E9%9D%99%E6%80%81%E6%A8%A1%E5%9D%97%E7%BB%93%E6%9E%84)
+    - [静态模块结构使得我们在打包时可以移除无用代码](#%E9%9D%99%E6%80%81%E6%A8%A1%E5%9D%97%E7%BB%93%E6%9E%84%E4%BD%BF%E5%BE%97%E6%88%91%E4%BB%AC%E5%9C%A8%E6%89%93%E5%8C%85%E6%97%B6%E5%8F%AF%E4%BB%A5%E7%A7%BB%E9%99%A4%E6%97%A0%E7%94%A8%E4%BB%A3%E7%A0%81)
+  - [Reference](#reference)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # 为什么 tree-shaking 的功能只有 ECMAScript modules 模块能够支持
 
 ## 静态模块结构

@@ -1,3 +1,16 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  
+
+- [libraryTarget 这个配置中的 commonjs 和 commonjs2 有什么区别](#librarytarget-%E8%BF%99%E4%B8%AA%E9%85%8D%E7%BD%AE%E4%B8%AD%E7%9A%84-commonjs-%E5%92%8C-commonjs2-%E6%9C%89%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB)
+  - [CommonJS 是什么](#commonjs-%E6%98%AF%E4%BB%80%E4%B9%88)
+    - [CommonJS 模块规范](#commonjs-%E6%A8%A1%E5%9D%97%E8%A7%84%E8%8C%83)
+    - [AMD (Asynchronous Module Definition) 模块规范](#amd-asynchronous-module-definition-%E6%A8%A1%E5%9D%97%E8%A7%84%E8%8C%83)
+  - [题目问题解答](#%E9%A2%98%E7%9B%AE%E9%97%AE%E9%A2%98%E8%A7%A3%E7%AD%94)
+  - [Reference](#reference)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # libraryTarget 这个配置中的 commonjs 和 commonjs2 有什么区别
 
 ## CommonJS 是什么

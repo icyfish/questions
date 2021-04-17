@@ -1,3 +1,12 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  
+
+- [Node.js 中 exports 和 module.exports 的区别](#nodejs-%E4%B8%AD-exports-%E5%92%8C-moduleexports-%E7%9A%84%E5%8C%BA%E5%88%AB)
+  - [Reference](#reference)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Node.js 中 exports 和 module.exports 的区别
 
 ```js

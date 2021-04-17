@@ -1,3 +1,12 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  
+
+- [如何区分 ES6 Class 和普通的函数](#%E5%A6%82%E4%BD%95%E5%8C%BA%E5%88%86-es6-class-%E5%92%8C%E6%99%AE%E9%80%9A%E7%9A%84%E5%87%BD%E6%95%B0)
+  - [Reference](#reference)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # 如何区分 ES6 Class 和普通的函数
 
 toString Representation Requirements:

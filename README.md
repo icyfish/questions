@@ -1,19 +1,6 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  
-
-- [JavaScript](#javascript)
-  - [⭐️ 好文章收藏](#%EF%B8%8F-%E5%A5%BD%E6%96%87%E7%AB%A0%E6%94%B6%E8%97%8F)
-- [React](#react)
-- [Redux](#redux)
-- [浏览器](#%E6%B5%8F%E8%A7%88%E5%99%A8)
-- [Node.js](#nodejs)
-- [工具](#%E5%B7%A5%E5%85%B7)
-  - [webpack](#webpack)
-- [文档翻译](#%E6%96%87%E6%A1%A3%E7%BF%BB%E8%AF%91)
-- [我的其他文章](#%E6%88%91%E7%9A%84%E5%85%B6%E4%BB%96%E6%96%87%E7%AB%A0)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+**Table of Contents**
 
 - [JavaScript](#javascript)
   - [⭐️ 好文章收藏](#️-好文章收藏)
@@ -25,6 +12,8 @@
   - [webpack](#webpack)
 - [文档翻译](#文档翻译)
 - [我的其他文章](#我的其他文章)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## JavaScript
 

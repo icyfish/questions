@@ -1,36 +1,20 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**
-
-- [JavaScript](#javascript)
-  - [⭐️ 好文章收藏](#️-好文章收藏)
-- [React](#react)
-- [Redux](#redux)
-- [浏览器](#浏览器)
-- [Node.js](#nodejs)
-- [工具](#工具)
-  - [webpack](#webpack)
-- [文档翻译](#文档翻译)
-- [我的其他文章](#我的其他文章)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
 ## JavaScript
 
 - [如何区分 ES6 Class 和普通的函数](./javascript/es6-class-function-diff.md)
-### ⭐️ 好文章收藏
 
-- [深入理解 JavaScript 原型](https://mp.weixin.qq.com/s/1UDILezroK5wrcK-Z5bHOg) | [阅读笔记](https://www.notion.so/byzhang/8848a5b56ffc42fd9a513c91398e7ec9)
+- [📝 阅读笔记](https://www.notion.so/byzhang/8848a5b56ffc42fd9a513c91398e7ec9) | [深入理解 JavaScript 原型](https://mp.weixin.qq.com/s/1UDILezroK5wrcK-Z5bHOg)
+
 ## React
 
 - [React 如何区分类组件和函数式组件?](https://www.notion.so/byzhang/64594e729b464c6ba6093c5b111b7e16)
-- [90 行代码实现 React](https://www.notion.so/byzhang/361f5125b8a44569819a110ff9f0b5db) | [Github Repo](https://github.com/icyfish/my-react)
-- [实现自己的 React (fiber, 虚拟 DOM 等)](https://www.notion.so/byzhang/43b3bec3e45c47caa222a8962c9888a0) | [Github Repo](https://github.com/icyfish/didact)
-
+- [setState 如何知道自己应该做什么?](https://www.notion.so/byzhang/941dc5ddaa0940e09dc11dd10b639c8b)
+- [90行代码实现React](https://www.notion.so/byzhang/361f5125b8a44569819a110ff9f0b5db) | [Github Repo](https://github.com/icyfish/my-react)
+- [实现自己的 React (fiber, 虚拟DOM等)](https://www.notion.so/byzhang/43b3bec3e45c47caa222a8962c9888a0) | [Github Repo](https://github.com/icyfish/didact)
+- [🎬 视频笔记: Getting Closure on React Hooks](https://www.notion.so/byzhang/6d4b8fe042a645f5b0c3ce141077ee0b)
 ## Redux
 
 - [Redux 与服务端渲染](./javascript/redux/redux-and-ssr.md)
-
+- [📝 阅读笔记: 动手实现 Redux](https://www.notion.so/byzhang/ebf2b3b088b34885b0aaa6f73102a1ed)
 ## 浏览器
 
 - [Chrome 开发者工具: 调试 JavaScript (1. 起步)](https://www.notion.so/byzhang/be33e04f4bc74a52aee64c903542d589)
@@ -58,3 +42,6 @@
 
 - [My Other posts](https://icyfish.github.io/posts/archives/)
 
+## 我的 notion 个人主页
+
+- [Notion Home Page](https://www.notion.so/byzhang/6dbdce167d8b4102b8a44cba76411d28)

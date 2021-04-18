@@ -13,10 +13,10 @@
     - [处理请求参数](#%E5%A4%84%E7%90%86%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0)
     - [异步获取状态](#%E5%BC%82%E6%AD%A5%E8%8E%B7%E5%8F%96%E7%8A%B6%E6%80%81)
     - [安全考虑](#%E5%AE%89%E5%85%A8%E8%80%83%E8%99%91)
-  - [参考](#%E5%8F%82%E8%80%83)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+**Redux文档翻译:** [原文](https://redux.js.org/recipes/server-rendering)
 # Redux 与服务端渲染
 
 ## 服务端的 redux
@@ -316,6 +316,4 @@ function handleRender(req, res) {
 
 为了避免这个问题, 我们需要采取一些措施混淆 JSON 字符串中包含的危险数据. 可以简单地加一个字符串替换, 比如: `JSON.stringify(state).replace(/</g, '\\u003c')`, 或者使用功能更完备的库: [serialize-javascript](https://github.com/yahoo/serialize-javascript).
 
-## 参考
-
-- [Redux 与服务端渲染](https://redux.js.org/recipes/server-rendering)
+ 

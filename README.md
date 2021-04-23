@@ -4,6 +4,9 @@
 
 - [📝 阅读笔记](https://www.notion.so/byzhang/8848a5b56ffc42fd9a513c91398e7ec9) | [深入理解 JavaScript 原型](https://mp.weixin.qq.com/s/1UDILezroK5wrcK-Z5bHOg)
 
+## TypeScript
+
+- [TypeScript 练习题](https://www.notion.so/byzhang/TypeScript-de45699b11344ee7b1263d819e8950f8)
 ## React
 
 - [👩‍💻 在 React 组件中渲染接口下发的 html](https://www.notion.so/byzhang/d072dc102b554c2bb5529fda1eb4412b) | [Github Repo](https://github.com/icyfish/react-app)

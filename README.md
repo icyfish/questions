@@ -15,8 +15,8 @@
 
 ## React
 
-- [👩‍💻 在 React 组件中渲染接口下发的 html](https://www.notion.so/byzhang/d072dc102b554c2bb5529fda1eb4412b) | [Github Repo](https://github.com/icyfish/react-app)
-- [👩‍💻 实现一个事件委托 hook](https://www.notion.so/byzhang/b6b0ab58a346443fa5cbbadf3cd67b82) | [Github Repo](https://github.com/icyfish/react-app)
+- [👩‍💻 在 React 组件中渲染接口下发的 html](https://www.notion.so/byzhang/d072dc102b554c2bb5529fda1eb4412b) | [Github Repo](./demo-react)
+- [👩‍💻 实现一个事件委托 hook](https://www.notion.so/byzhang/b6b0ab58a346443fa5cbbadf3cd67b82) | [Github Repo](./demo-react)
 - [React 如何区分类组件和函数式组件?](https://www.notion.so/byzhang/64594e729b464c6ba6093c5b111b7e16)
 - [setState 如何知道自己应该做什么?](https://www.notion.so/byzhang/941dc5ddaa0940e09dc11dd10b639c8b)
 - [90 行代码实现 React](https://www.notion.so/byzhang/361f5125b8a44569819a110ff9f0b5db) | [Github Repo](https://github.com/icyfish/my-react)

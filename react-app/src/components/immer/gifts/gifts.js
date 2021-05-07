@@ -2,16 +2,35 @@ import produce from "immer";
 import { allUsers, getCurrentUser } from "./misc/users";
 import defaultGifts from "./misc/gifts";
 
-export function addGift(state, id, description, image) {
-  return produce(state, draft => {
-    draft.gifts.push({
-      id,
-      description,
-      image,
-      reservedBy: undefined
-    });
+/**
+ * currying:
+ *
+ * produce(state, recipe) => nextState
+ * produce(recipe, x) => (state, x) => nextState
+ */
+
+export const addGift = produce((draft, id, description, image) => {
+  draft.gifts.push({
+    id,
+    description,
+    image,
+    reservedBy: undefined
   });
-}
+});
+
+/**
+ * normal impl
+ */
+// export function addGift(state, id, description, image) {
+//   return produce(state, draft => {
+//     draft.gifts.push({
+//       id,
+//       description,
+//       image,
+//       reservedBy: undefined
+//     });
+//   });
+// }
 
 export function toggleReservation(state, giftId) {
   return produce(state, draft => {

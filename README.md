@@ -10,7 +10,7 @@
 
 ## TypeScript
 
-- [TypeScript 练习题](https://www.notion.so/byzhang/TypeScript-de45699b11344ee7b1263d819e8950f8)
+- [TypeScript 练习题](./javascript/ts-challenges.md)
 
 ## React
 
@@ -24,7 +24,7 @@
 
 ## Redux
 
-- [Redux 与服务端渲染](./javascript/redux/redux-and-ssr.md)
+- [Redux 与服务端渲染](./javascript/state-management/redux-and-ssr.md)
 - [📝 阅读笔记: 动手实现 Redux](https://www.notion.so/byzhang/ebf2b3b088b34885b0aaa6f73102a1ed)
 
 ## 浏览器

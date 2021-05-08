@@ -55,6 +55,12 @@ describe("Reserving an unreserved gift", () => {
   test("didn't the original state", () => {
     expect(initialState.gifts[1].reservedBy).toBe(undefined);
   });
+
+  test("意外修改新生成的 state 会报错", () => {
+    expect(() => {
+      nextState.gifts[1].reservedBy = undefined;
+    }).toThrow();
+  });
 });
 
 describe("Reserving an already reserved gift", () => {
@@ -62,5 +68,11 @@ describe("Reserving an already reserved gift", () => {
 
   test("preserves stored reservedBy", () => {
     expect(nextState.gifts[0].reservedBy).toBe(2); // Someone else
+  });
+
+  test("对于已存在的 gift, 没有修改操作时, 不应该有变化", () => {
+    // expect(nextState.gifts[0]).toEqual(initialState.gifts[0]);
+    expect(nextState.gifts[0]).toBe(initialState.gifts[0]);
+    // expect(nextState).toBe(initialState);
   });
 });

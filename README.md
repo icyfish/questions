@@ -2,7 +2,6 @@
 
 - [debounce](./implement-my/utils/debounce/index.js)
 
-- [ ] promise(Not Complete Yet)
 ## JavaScript
 
 - [如何区分 ES6 Class 和普通的函数](./javascript/es6-class-function-diff.md)

@@ -1,9 +1,9 @@
-
-code[class*='language-'],
-pre[class*='language-'] {
+code[class*="language-"],
+pre[class*="language-"] {
   color: rgb(221, 202, 202);
   background: none;
-  font-family: "Roboto Mono", Monaco, courier, monospace ,Consolas, Menlo, Monaco, source-code-pro, Courier New, monospace;
+  font-family: "Roboto Mono", Consolas, Monaco, courier, monospace, Menlo,
+    Monaco, source-code-pro, Courier New, monospace;
   font-feature-settings: normal;
   text-align: left;
   white-space: pre;
@@ -24,36 +24,38 @@ pre[class*='language-'] {
 }
 
 /* Code blocks */
-pre[class*='language-'] {
+pre[class*="language-"] {
+  font-size: 16px;
+  margin: 0;
   overflow: auto;
-  padding: 1.3125rem;
+  padding: 1.2rem;
 }
 
-pre[class*='language-']::-moz-selection {
+pre[class*="language-"]::-moz-selection {
   /* Firefox */
   background: hsl(207, 4%, 16%);
 }
 
-pre[class*='language-']::selection {
+pre[class*="language-"]::selection {
   /* Safari */
   background: hsl(207, 4%, 16%);
 }
 
 /* Text Selection colour */
-pre[class*='language-']::-moz-selection,
-pre[class*='language-'] ::-moz-selection {
+pre[class*="language-"]::-moz-selection,
+pre[class*="language-"] ::-moz-selection {
   text-shadow: none;
   background: hsla(0, 0%, 100%, 0.15);
 }
 
-pre[class*='language-']::selection,
-pre[class*='language-'] ::selection {
+pre[class*="language-"]::selection,
+pre[class*="language-"] ::selection {
   text-shadow: none;
   background: hsla(0, 0%, 100%, 0.15);
 }
 
 /* Inline code */
-:not(pre) > code[class*='language-'] {
+:not(pre) > code[class*="language-"] {
   border-radius: 0.3em;
   background: #f8f8f8;
   color: #d63200;
@@ -97,7 +99,7 @@ pre[class*='language-'] ::selection {
 .token.selector,
 .token.doctype {
   color: rgb(199, 146, 234);
-  font-style: 'italic';
+  font-style: "italic";
 }
 
 .token.class-name {
@@ -153,7 +155,6 @@ pre[data-line] {
   }
 }
 
-.gatsby-highlight pre[class*='language-'] {
+.gatsby-highlight pre[class*="language-"] {
   float: left;
-  min-width: 100%;
 }

@@ -2,7 +2,7 @@ code[class*="language-"],
 pre[class*="language-"] {
   color: rgb(221, 202, 202);
   background: none;
-  font-family: "Roboto Mono", Consolas, Monaco, courier, monospace, Menlo,
+  font-family: Consolas, "Roboto Mono", Monaco, courier, monospace, Menlo,
     Monaco, source-code-pro, Courier New, monospace;
   font-feature-settings: normal;
   text-align: left;
@@ -26,9 +26,8 @@ pre[class*="language-"] {
 /* Code blocks */
 pre[class*="language-"] {
   font-size: 16px;
-  margin: 0;
-  overflow: auto;
-  padding: 1.2rem;
+  margin: 0 0 0 20px;
+  padding: 1.2rem 0;
 }
 
 pre[class*="language-"]::-moz-selection {
@@ -153,8 +152,4 @@ pre[data-line] {
   .gatsby-highlight {
     border-radius: 0;
   }
-}
-
-.gatsby-highlight pre[class*="language-"] {
-  float: left;
 }

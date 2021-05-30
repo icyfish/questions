@@ -2,8 +2,8 @@ code[class*="language-"],
 pre[class*="language-"] {
   color: rgb(221, 202, 202);
   background: none;
-  font-family: Consolas, "Roboto Mono", Monaco, courier, monospace, Menlo,
-    Monaco, source-code-pro, Courier New, monospace;
+  font-family: source-code-pro, Consolas, "Roboto Mono", monospace, Menlo,
+    Monaco, Courier New;
   font-feature-settings: normal;
   text-align: left;
   white-space: pre;
@@ -58,6 +58,8 @@ pre[class*="language-"] ::selection {
   border-radius: 0.3em;
   background: #f8f8f8;
   color: #d63200;
+  /* color: #36313d;
+  background: #fbf2e9; */
   padding: 0.15em 0.2em 0.05em;
   white-space: normal;
 }

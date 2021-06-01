@@ -1,18 +1,19 @@
 h3.title {
   margin-bottom: 28px;
+  padding-left: 15px;
 }
 ul.table_list {
-  width: 20rem;
+  width: 15rem;
   left: calc(50% + 400px);
   top: 50px;
   position: fixed;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   border-radius: 0.25rem;
-  padding: 0.75rem;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
+  max-height: 500px;
+  overflow: scroll;
 }
 
 .table_list li {

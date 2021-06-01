@@ -7,7 +7,7 @@
   "license": "0BSD",
   "scripts": {
     "start": "yarn clean && npm run develop",
-    "build": "gatsby build",
+    "build": "yarn clean && gatsby build",
     "develop": "gatsby develop",
     "serve": "yarn clean && gatsby serve",
     "deploy": "yarn clean && gatsby build --prefix-paths && yarn publish",

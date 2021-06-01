@@ -4,8 +4,8 @@ import Toggle from "./Toggle"
 import Helmet from "react-helmet"
 
 import { rhythm, scale } from "../utils/typography"
-import sun from "../images/sun.png"
-import moon from "../images/moon.png"
+import sun from "../../static/images/sun.png"
+import moon from "../../static/images/moon.png"
 
 class Layout extends React.Component {
   state = {

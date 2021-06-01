@@ -1,3 +1,4 @@
+import '../css/font.css';
 import '../css/global.css';
 
 import Typography from 'typography';

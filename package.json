@@ -1,8 +1,7 @@
 {
   "name": "blog",
-  "private": true,
   "description": "blog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "n/a",
   "license": "0BSD",
   "scripts": {
@@ -10,8 +9,7 @@
     "build": "yarn clean && gatsby build",
     "develop": "gatsby develop",
     "serve": "yarn clean && gatsby serve",
-    "deploy": "yarn clean && gatsby build --prefix-paths && yarn publish",
-    "publish": "gh-pages -d public",
+    "deploy": "yarn clean && gatsby build --prefix-paths && gh-pages -d public",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "clean": "rm -rf public && rm -rf .cache",
     "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\" && exit 1"

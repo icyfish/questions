@@ -1,0 +1,45 @@
+h3.title {
+  margin-bottom: 28px;
+}
+ul.table_list {
+  width: 20rem;
+  left: calc(50% + 400px);
+  top: 50px;
+  position: fixed;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.table_list li {
+  padding: 0.25rem;
+  margin-bottom: 1em;
+  line-height: 1rem;
+  list-style: none;
+}
+
+.table_list a {
+  text-decoration: none;
+  color: var(--color-primary);
+}
+.table_list a:hover {
+  transition-duration: 300ms;
+  color: rgba(167, 139, 250, 1);
+  text-decoration: none;
+}
+
+.table_list a.active {
+  transition-duration: 300ms;
+  color: rgba(167, 139, 250, 1);
+  text-decoration: none;
+  border-radius: 0.125rem;
+}
+.headings {
+  scrollbar-width: thin;
+  scrollbar-color: #367ee9 rgba(48, 113, 209, 0.3);
+  overflow: hidden auto;
+}

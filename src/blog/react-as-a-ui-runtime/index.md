@@ -740,4 +740,32 @@ function Example() {
 
 即使我们希望将协调的过程拆分成小块, 以免[阻塞](https://www.youtube.com/watch?v=mDdgfyRB5kg)浏览器的正常工作, <mark>we should still perform the actual host tree operations in a single synchronous swoop.</mark> 这样的话, 我们才能够确保用户不看到更新了一半的 UI, 与此同时, 浏览器也不会执行不必要布局和样式计算, 因为用户是看不到中间过程的状态变化的.
 
-这也是为什么, React 要把这部分相关的工作分为两个阶段("渲染阶段"和"提交阶段")的原因.在 _渲染阶段_ React 调用你的组件并执行协调的操作. ji
+这也是为什么, React 要把这部分相关的工作分为两个阶段("渲染阶段"和"提交阶段")的原因.在 _渲染阶段_ React 调用你的组件并执行协调的操作. 这一过程即使被打断, 也能够确保正常的渲染流程, [未来](https://reactjs.org/blog/2018/03/01/sneak-peek-beyond-react-16.html), 这一过程将会是异步的.
+
+在 _提交阶段_, React 才会与宿主树进行交互. 这一过程始终是同步的.
+
+## 缓存 Memoization
+
+当父节点开始通过调用 `setState` 来规划一次 UI 更新的时候, 默认情况下 React 会对这个父节点下的所有子节点进行协调的操作. 这是因为 React 不知道父节点的更新是否会影响它的子节点. 同时, React 的默认行为是保持一致性. 这样的更新方式听起来成本很大, 但其实在实际生产过程中, 对于规模较小或者是中等的子树, 都不是什么大问题.
+
+如果树的层级很深的话, 你可以告诉 React 把这些子树[缓存](https://en.wikipedia.org/wiki/Memoization)下来, 并且复用前一次渲染的结果, 前提是浅比较下 props 没有变化.
+
+```jsx
+function Row({ item }) {
+  // ...
+}
+// highlight-next-line
+export default React.memo(Row);
+```
+
+现在父组件中的 `<Table>` 中的 `setState` 会跳过对 `Row` 的协调, 因为它内部的 `item` 与上一次渲染时的 `item` 是同一个引用.
+
+我们还能够使用 [`useMemo` Hook](https://reactjs.org/docs/hooks-reference.html#usememo) 来实现更加细粒度的缓存操作. 缓存位于组件内部, 如果组件内部的状态消失, 缓存也会一同消失. <mark>It only holds one last item.</mark>
+
+React 内部默认不会对组件进行缓存. 一般情况下, 组件会接受很多 props, 因此缓存它们会是一个净损耗.
+
+## Raw Models
+
+很有意思的是, React 对于十分细粒度的更新并没有采取实时响应的方式. 也就是说, <mark>In other words, any update at the top triggers reconciliation instead of updating just the components affected by changes.</mark>
+
+我们是刻意这样设计的. 在面向用户的 web 应用中, [可交互时间](https://calibreapp.com/blog/time-to-interactive)是一个关键性能指标, 遍历模型并且设置细粒度时间监听器的时间, 就相当于上述的可交互时间. 除此之外, 在许多应用中, 不管是

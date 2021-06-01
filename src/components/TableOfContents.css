@@ -3,7 +3,7 @@ h3.title {
   padding-left: 15px;
 }
 ul.table_list {
-  width: 15rem;
+  max-width: 15rem;
   left: calc(50% + 400px);
   top: 50px;
   position: fixed;
@@ -13,7 +13,6 @@ ul.table_list {
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
   max-height: 500px;
-  overflow: scroll;
 }
 
 .table_list li {
@@ -40,7 +39,5 @@ ul.table_list {
   border-radius: 0.125rem;
 }
 .headings {
-  scrollbar-width: thin;
-  scrollbar-color: #367ee9 rgba(48, 113, 209, 0.3);
-  overflow: hidden auto;
+  overflow: scroll;
 }

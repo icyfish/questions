@@ -68,9 +68,9 @@ function PageContent({ post }) {
         >
           <p>
             {post.frontmatter.date}
-            <span style={{ marginLeft: "10px", color: "#6d191980" }}>
+            {/* <span style={{ marginLeft: "10px", color: "#6d191980" }}>
               {post.wordCount.words} words
-            </span>
+            </span> */}
             <span style={{ marginLeft: "10px" }}>
               {formatReadingTime(post.timeToRead)}
             </span>

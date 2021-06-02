@@ -45,9 +45,9 @@ const BlogIndex = ({ data, location }) => {
                     </Link>
                   </h3>
                   <small>{edge.node.frontmatter.date}</small>
-                  <span style={{ marginLeft: "10px", color: "#6d191980" }}>
+                  {/* <span style={{ marginLeft: "10px", color: "#6d191980" }}>
                     {edge.node.wordCount.words} words
-                  </span>
+                  </span> */}
                   <span style={{ marginLeft: "10px" }}>
                     {formatReadingTime(edge.node.timeToRead)}
                   </span>

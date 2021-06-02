@@ -53,7 +53,6 @@ function useActiveId(headingList) {
       },
       { rootMargin: `0% 0% -80% 0%` }
     )
-
     headingList.forEach(item => {
       const target = document.querySelector(item.id)
       if (!target) return

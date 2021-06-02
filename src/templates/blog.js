@@ -17,7 +17,7 @@ const BlogPostTemplate = ({ data, location }) => {
         title={post.frontmatter.title}
         description={post.frontmatter.description || post.excerpt}
       />
-      <TableOfContents headings={post.headings} />
+      {post.frontmatter.toc && <TableOfContents headings={post.headings} />}
       <PageContent post={post} location={location} />
       <nav className="blog-post-nav">
         <ul
@@ -116,6 +116,7 @@ export const pageQuery = graphql`
         words
       }
       frontmatter {
+        toc
         title
         date(formatString: "MMMM DD, YYYY")
         description

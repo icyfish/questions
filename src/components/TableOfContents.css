@@ -5,14 +5,14 @@ h3.title {
 ul.table_list {
   max-width: 15rem;
   left: calc(50% + 400px);
-  top: 180px;
+  top: 7rem;
   position: fixed;
   display: flex;
   flex-direction: column;
   border-radius: 0.25rem;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
-  max-height: 500px;
+  max-height: 27rem
 }
 
 .table_list li {

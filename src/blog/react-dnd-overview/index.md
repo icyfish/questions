@@ -10,7 +10,7 @@ toc: true
 
 原文: https://react-dnd.github.io/react-dnd/docs/overview
 
-React DnD 与市面上其他的拖拽库区别比较大, 如果你以前从来没有用过 React DnD, 上手会比较困难. 不过, 只要你了解了其中一些设计理念之后, 对 DnD 的理解和上手就会更容易了. 因此我建议大家在阅读文档的其他部分时, 首先阅读这一部分, 了解一些重要概念.
+React DnD 与业界其他的拖拽库区别比较大, 如果你以前从来没有用过 React DnD, 上手会比较困难. 不过, 只要你了解了其中一些设计理念之后, 对 DnD 的理解和上手就会更容易了. 因此我建议大家在阅读文档的其他部分时, 首先阅读这一部分, 了解一些重要概念.
 
 React DnD 中某些概念与 [Flux](http://facebook.github.io/flux/) 和 [Redux](https://github.com/reactjs/react-redux) 类似. 这并非巧合, 它内部使用的就是 Redux.
 
@@ -100,7 +100,8 @@ React DnD 基于 [HTML5 drag and drop API (HTML5 拖拽 API)](https://developer.
 于是, React DnD 以**插件化的方式实现了对 HTML5 拖拽 API 的依赖.** 你可以选择不依赖该 API, 基于浏览器的触摸事件和鼠标事件等, 自己去实现拖拽的功能. 这种插件化的实现方式, 在 React DnD 中, 被称为*底层*. 目前 React DnD 所配套的底层是 [HTML5 backend](https://react-dnd.github.io/react-dnd/docs/backends/html5).
 
 React DnD 底层的作用和 React 的合成事件系统有点类似: **都处理了原生的 DOM 事件并抹平了各个浏览器之间的差异(兼容性问题).** 尽管有这些类似之处, 但是 React DnD 并不依赖 React 以及它的合成事件. 本质上来说, React DnD 底层所做的工作就是将 DOM 事件翻译成内部的 Redux action, 以便 React DnD 对这些 DOM 事件进行处理. 
-## Hooks 和高阶组件
+
+## Hooks 和装饰器
 
 现在你已经了解了 React DnD 的一些重要概念, 它们包括:
 

@@ -4,6 +4,7 @@ import { Link, graphql } from "gatsby"
 import Bio from "../components/Bio"
 import Layout from "../components/Layout"
 import Seo from "../components/Seo"
+import { formatReadingTime } from "../utils/helpers"
 
 const BlogIndex = ({ data, location }) => {
   const siteTitle = data.site.siteMetadata?.title || `Title`
@@ -44,6 +45,12 @@ const BlogIndex = ({ data, location }) => {
                     </Link>
                   </h3>
                   <small>{edge.node.frontmatter.date}</small>
+                  <span style={{ marginLeft: "10px", color: "#6d191980" }}>
+                    {edge.node.wordCount.words} words
+                  </span>
+                  <span style={{ marginLeft: "10px" }}>
+                    {formatReadingTime(edge.node.timeToRead)}
+                  </span>
                 </header>
                 <section>
                   <p
@@ -82,6 +89,10 @@ export const pageQuery = graphql`
           fields {
             slug
           }
+          wordCount {
+            words
+          }
+          timeToRead
           frontmatter {
             date(formatString: "MMMM DD, YYYY")
             title

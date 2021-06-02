@@ -4,6 +4,8 @@ import Bio from "../components/Bio"
 import Layout from "../components/Layout"
 import Seo from "../components/Seo"
 import TableOfContents from "../components/TableOfContents"
+import { rhythm, scale } from "../utils/typography"
+import { formatReadingTime } from "../utils/helpers"
 
 const BlogPostTemplate = ({ data, location }) => {
   const post = data.markdownRemark
@@ -56,7 +58,24 @@ function PageContent({ post }) {
     >
       <header>
         <h1 itemProp="headline">{post.frontmatter.title}</h1>
-        <p>{post.frontmatter.date}</p>
+        <p
+          style={{
+            ...scale(-1 / 5),
+            display: "block",
+            marginBottom: rhythm(1),
+            marginTop: rhythm(-4 / 5),
+          }}
+        >
+          <p>
+            {post.frontmatter.date}
+            <span style={{ marginLeft: "10px", color: "#6d191980" }}>
+              {post.wordCount.words} words
+            </span>
+            <span style={{ marginLeft: "10px" }}>
+              {formatReadingTime(post.timeToRead)}
+            </span>
+          </p>
+        </p>
       </header>
       <section
         dangerouslySetInnerHTML={{ __html: post.html }}
@@ -88,9 +107,13 @@ export const pageQuery = graphql`
       excerpt(pruneLength: 160)
       html
       headings {
-        value,
-        id,
+        value
+        id
         depth
+      }
+      timeToRead
+      wordCount {
+        words
       }
       frontmatter {
         title

@@ -3,6 +3,7 @@ title: React 作为 UI 运行时
 date: "2021-05-28"
 template: "post"
 draft: true
+toc: true
 category: "React"
 tags:
   - "React"
@@ -766,6 +767,6 @@ React 内部默认不会对组件进行缓存. 一般情况下, 组件会接受�
 
 ## Raw Models
 
-很有意思的是, React 对于十分细粒度的更新并没有采取实时响应的方式. 也就是说, <mark>In other words, any update at the top triggers reconciliation instead of updating just the components affected by changes.</mark>
+很讽刺的是, React 对于十分细粒度的更新并没有采取实时响应的方式(并不那么 reactive). <mark>In other words, any update at the top triggers reconciliation instead of updating just the components affected by changes.</mark>
 
 我们是刻意这样设计的. 在面向用户的 web 应用中, [可交互时间](https://calibreapp.com/blog/time-to-interactive)是一个关键性能指标, 遍历模型并且设置细粒度时间监听器的时间, 就相当于上述的可交互时间. 除此之外, 在许多应用中, 不管是

@@ -1,36 +1,34 @@
 ---
 title: React DnD 文档翻译 - 概览
-date: "2021-04-08"
+date: "2021-06-02"
 template: "post"
-draft: false
+draft: true
 category: "Drag And Drop"
 description: "React DnD Overview"
 toc: false
 ---
 
-Overview: https://react-dnd.github.io/react-dnd/docs/overview
+原文: https://react-dnd.github.io/react-dnd/docs/overview
 
 React DnD 与市面上其他的拖拽库区别比较大, 如果你以前从来没有用过 React DnD, 上手会比较困难. 不过, 只要你了解了其中一些设计理念之后, 对 DnD 的理解和上手就会更容易了. 因此我建议大家在阅读文档的其他部分时, 首先阅读这一部分, 了解一些重要概念.
 
-React DnD 中某些概念与与 [Flux](http://facebook.github.io/flux/) 和 [Redux](https://github.com/reactjs/react-redux) 类似.  这并非巧合, 它内部使用的就是 Redux.
+React DnD 中某些概念与 [Flux](http://facebook.github.io/flux/) 和 [Redux](https://github.com/reactjs/react-redux) 类似. 这并非巧合, 它内部使用的就是 Redux.
 
-React DnD 基于 [HTML5 drag and drop API (HTML5 拖拽API)](https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop) 实现. 个人认为将其作为默认实现是十分合理的, 因为它在拖拽状态的预览效果就是被拖拽元素本身的样式, 用户不需要再对预览的效果做额外的处理实现. 同时, 这个 API 也是唯一处理文件拖拽的 API.
+## Items and Types
 
-但是 HTML5 拖拽 API 有一些缺陷, 它不支持触摸屏. 同时在 IE 浏览器中还存在一些兼容性问题, 因此在 IE 中可以扩展的功能相比其他浏览器也比较少.
+与 Flux 或者 Redux 类似的是, React DnD 操作的是数据, 而非视图, 并且只有数据能够控制视图. 当用户在屏幕中拖拽某些部分时, 我们并不将这些部分称为组件或者 DOM 节点, 而是某种类型的 _项目_  (_item_).
 
-于是, 在 React DnD 中, 以**插件化的方式实现了对 HTML5 拖拽 API 的依赖.** 你可以选择不依赖该 API, 基于浏览器的触摸事件和鼠标事件等, 自己去实现拖拽的功能. 这种插件化的实现方式, 在 React DnD中, 被称为底层. 目前 React DnD所依赖的底层只有 [HTML5 backend](https://react-dnd.github.io/react-dnd/docs/backends/html5) , 后续我们会有更多的依赖.
+那么项目是什么呢? 它是一个 JavaScript 对象, 描述了用户正在拖拽的内容. 举个例子, 在看板类的应用中, 用户所拖拽的卡片, 用项目的形式描述就会像是这样 `{ cardId: 42 }`. 在国际象棋游戏中, 当用户拿起一个棋子, 项目可能就是这样 `{ fromCell: 'C5', piece: 'queen' }` . **将所拖拽的数据以对象的形式表示有利于组件之间的解耦.**
 
-React DnD 底层的作用和 React 的合成事件系统有点类似: **都处理了原生的 DOM 事件并抹平了各个浏览器之间的差异(兼容性问题).** 尽管有这些类似之处, 但是 React DnD 并不依赖 React 以及它的合成事件. 本质上来说, React DnD 底层所作的工作就是将 DOM 事件翻译成内部的 Redux action, 以便 React DnD 对它们进行处理. 
+那么类型又是什么呢? 它是表示一类项目的唯一标识, 由字符串(或者 [symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol))表示. 在看板应用中, 会存在一个`"卡片"`类型, 代表所有可拖拽的卡片类项目, 还会存在`"列表"`类型, 代表某些卡片所在的容器区域, 同时这个列表类型也是可拖拽的. 而在国际象棋游戏中, 就只有一个类型: `"棋子"`.
 
-与 Flux 或者 Redux 类似的是, React DnD 操作的是数据, 而非视图, 并且均为单一信息源. 当用户在屏幕中拖拽某些部分时, 我们并不将这些部分称为组件或者 DOM 节点, 而是某种类型的项目 (item).
+类型在 dnd 中是一个重要的概念, 当我们的应用规模逐渐扩大之后, 可能希望有更多可拖拽的部分, 
 
-那么项目具体表示的是什么呢? 它是一个 JavaScript 对象, 描述了用户正在拖拽的内容. 举个例子, 在看板类的应用中, 用户所拖拽的卡片, 用项目的形式描述就会像是这样 `{ cardId: 42 }`. 在国际象棋游戏中, 当用户拿起一个棋子, item 可能就是这样 `{ fromCell: 'C5', piece: 'queen' }` . **将所拖拽的数据以对象的形式表示有利于组件之间的解耦.**
+ <mark>MARK</mark>
 
-那么类型表示的又是什么呢?  它表示一类项目. 在看板应用中, 会存在一个卡片类型, 代表所有可拖拽的卡片类项目, 还会存在列表类型, 代表某些卡片所在的容器区域. 而在国际象棋游戏中, 也许就只有一个类型: 棋子.
+我们当然不可能针对所有的可拖拽部分使用同一类事件处理器. **类型的概念能够确保拖拽元素和拖拽目标(区域)互相匹配.**  那么我们就需要事先列举出应用中包含的所有可拖拽类型, 就像在 Redux 中列举出所有 action 一样.
 
-类型是一个重要的概念, 当我们的应用规模逐渐扩大之后, 可能希望有更多可拖拽的部分, 我们当然不可能针对所有的可拖拽部分使用同一类事件处理器. **类型的概念能够确保拖拽元素和拖拽目标(区域)互相匹配.**  那么我们就需要事先列举出应用中包含的所有可拖拽类型, 就像在 Redux 中列举出所有 action 一样.
-
-拖拽的动作在内部是有状态的. 拖拽的操作要么处于正在进行状态, 要么处于静止状态. 当前状态的所有者一定属于某个类型, 某个项目. ****
+拖拽的动作在内部是有状态的. 拖拽的操作要么处于正在进行状态, 要么处于静止状态. 当前状态的所有者一定属于某个类型, 某个项目.
 
 React DnD 通过内部状态存储单元的某些小容器(叫做*监视器*)将拖拽的状态暴露出来. **我们能利用监视器所提供的信息, 更新组件的状态, 以处理拖拽状态的变化.**
 

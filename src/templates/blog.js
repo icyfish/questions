@@ -66,15 +66,13 @@ function PageContent({ post }) {
             marginTop: rhythm(-4 / 5),
           }}
         >
-          <p>
-            {post.frontmatter.date}
-            {/* <span style={{ marginLeft: "10px", color: "#6d191980" }}>
+          {post.frontmatter.date}
+          {/* <span style={{ marginLeft: "10px", color: "#6d191980" }}>
               {post.wordCount.words} words
             </span> */}
-            <span style={{ marginLeft: "10px" }}>
-              {formatReadingTime(post.timeToRead)}
-            </span>
-          </p>
+          <span style={{ marginLeft: "10px" }}>
+            {formatReadingTime(post.timeToRead)}
+          </span>
         </p>
       </header>
       <section
@@ -102,6 +100,7 @@ export const pageQuery = graphql`
         title
       }
     }
+
     markdownRemark(id: { eq: $id }) {
       id
       excerpt(pruneLength: 160)

@@ -769,4 +769,10 @@ React 内部默认不会对组件进行缓存. 一般情况下, 组件会接受�
 
 很讽刺的是, React 对于十分细粒度的更新并没有采取实时响应的方式(并不那么 reactive). <mark>In other words, any update at the top triggers reconciliation instead of updating just the components affected by changes.</mark>
 
-我们是刻意这样设计的. 在面向用户的 web 应用中, [可交互时间](https://calibreapp.com/blog/time-to-interactive)是一个关键性能指标, 遍历模型并且设置细粒度时间监听器的时间, 就相当于上述的可交互时间. 除此之外, 在许多应用中, 不管是
+我们是刻意这样设计的. 在面向用户的 web 应用中, [可交互时间](https://calibreapp.com/blog/time-to-interactive)是一个关键性能指标, 遍历模型并且设置细粒度时间监听器的时间, 就相当于上述的可交互时间. 除此之外, 在许多应用中, <mark>交互所带来的更新: 比较小的是按钮 hover 这类的, 较大的则是页面的跳转.</mark>. 在这些场景下, 采取细粒度的响应方式其实会造成资源非必要的浪费.
+
+React 中最核心的设计原则之一是: 它与 <mark>row data</mark> 进行交互. 如果你现在从网络请求中获取到一系列的 JavaScript 对象数据, 甚至可以不做任何预处理直接将它们扔到你的组件中. <mark>There are no gotchas about which properties you can access, or unexpected performance cliffs when a structure slightly changes. React rendering is O(view size) rather than O(model size), and you can significantly cut the view size with windowing.</mark>
+
+当然, 还存在一些适合细粒度订阅更新的应用 -- 比如证券报价机. 这类需要实时更新的应用比较罕见, 它是其中之一. 对于这类应用, <mark>While imperative escape hatches can help optimize such code, React might not be the best fit for this use case. </mark> 尽管如此, 你还是可以基于 React 实现适合自己的细粒度订阅更新系统.
+
+**不过需要注意的是, 这类系统会存在一个共性的性能问题.** 比如说, 当我们要渲染一棵很深的树(这种情况常在页面变化(transition)的时候发生)却不希望阻塞浏览器处理正常的任务. 实时更新的特性会使得这样的场景变得十分影响性能, 因为我们需要

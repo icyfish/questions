@@ -775,4 +775,125 @@ React 中最核心的设计原则之一是: 它与 <mark>row data</mark> 进行�
 
 当然, 还存在一些适合细粒度订阅更新的应用 -- 比如证券报价机. 这类需要实时更新的应用比较罕见, 它是其中之一. 对于这类应用, <mark>While imperative escape hatches can help optimize such code, React might not be the best fit for this use case. </mark> 尽管如此, 你还是可以基于 React 实现适合自己的细粒度订阅更新系统.
 
-**不过需要注意的是, 这类系统会存在一个共性的性能问题.** 比如说, 当我们要渲染一棵很深的树(这种情况常在页面变化(transition)的时候发生)却不希望阻塞浏览器处理正常的任务. 实时更新的特性会使得这样的场景变得十分影响性能, 因为我们需要
+**不过需要注意的是, 这类系统会存在一个共性的性能问题.** 比如说, 当我们要渲染一棵很深的树(这种情况常在页面变化(transition)的时候发生)却不希望阻塞浏览器处理正常的任务. 实时更新的特性会使得这样的场景变得十分影响性能. 另一个问题是, 在开始渲染视图之前, 我们必须要等待数据准备好. 在 React 中, 我们使用了 [Concurrent Rendering](https://reactjs.org/blog/2018/03/01/sneak-peek-beyond-react-16.html) 的方式来解决上面的问题.
+
+## 合并更新
+
+Several components may want to update state in response to the same event. This example is contrived but it illustrates a common pattern:
+
+```jsx
+function Parent() {
+  let [count, setCount] = useState(0);
+  return (
+    // highlight-next-line
+    <div onClick={() => setCount(count + 1)}>
+      Parent clicked {count} times
+      <Child />
+    </div>
+  );
+}
+
+function Child() {
+  let [count, setCount] = useState(0);
+  return (
+    // highlight-next-line
+    <button onClick={() => setCount(count + 1)}>
+      Child clicked {count} times
+    </button>
+  );
+}
+```
+
+当分发了一个事件之后, 子元素的 `onClick` 首先被触发(然后触发 `setState` 方法). 之后父元素在它的 `onClick` 处理器中调用 `setState` 方法.
+
+如果 React 对于所有 `setState` 调用都立即重新渲染组件, 最终会造成子组件被渲染两次:
+
+```jsx
+*** Entering React's browser click event handler ***
+Child (onClick)
+  - setState
+  // highlight-next-line
+  - re-render Child // 😞 不必要的渲染
+Parent (onClick)
+  - setState
+  - re-render Parent
+  // highlight-next-line
+  - re-render Child
+*** Exiting React's browser click event handler ***
+```
+
+第一次`Child`的渲染是完全没有必要的. 我们不能让 React 跳过第二次 `Child` 的渲染, 因为 `Parent` 状态更新引起的重新渲染或许会传递给 `Child` 一些不同的数据, 如果跳过的话会引起一些问题.
+
+**这也是为什么 React 会在事件处理器内部合并更新的原因:**
+
+```jsx
+*** Entering React's browser click event handler ***
+Child (onClick)
+  - setState
+Parent (onClick)
+  - setState
+*** Processing state updates                     ***
+  - re-render Parent
+  - re-render Child
+*** Exiting React's browser click event handler  ***
+```
+
+组件内部的 `setState` 调用不会立即引起重新渲染. 取而代之的是, React 会先执行所有的处理函数, 然后针对所有的更新执行一次页面的重新渲染.
+
+合并更新对于性能优化有比较大的好处, 但是如果你的代码是下面这样的, 可能就会遇到一些问题:
+
+```jsx
+ const [count, setCount] = useState(0);
+
+  function increment() {
+    setCount(count + 1);
+  }
+
+  function handleClick() {
+    increment();
+    increment();
+    increment();
+  }
+```
+
+如果我们最开始将 `count` 设置为 `0`, 以上的代码就是调用了三次 `setCount(1)`. 为了解决这个问题, `setState` 提供了一个重载的方式, 接受一个 "updater" 方法:
+
+```jsx
+  const [count, setCount] = useState(0);
+
+  function increment() {
+    setCount(c => c + 1);
+  }
+
+  function handleClick() {
+    increment();
+    increment();
+    increment();
+  }
+```
+
+React 内部将这个 updater 方法放在一个队列中, 然后按顺序调用这些方法, 最终 `count` 被更新成了 `3`, 并且只引发了一次重新渲染.
+
+当 state 中所存储的状态结构变得更复杂了之后, 我们可以使用 [`useReducer` Hook](https://reactjs.org/docs/hooks-reference.html#usereducer)来处理内部状态的更新. 这个更新方式其实就是 "updater" 模式的进阶版本, 唯一的区别是每一次状态更新都有一个名字:
+
+```jsx
+  const [counter, dispatch] = useReducer((state, action) => {
+    if (action === 'increment') {
+      return state + 1;
+    } else {
+      return state;
+    }
+  }, 0);
+
+  function handleClick() {
+    dispatch('increment');
+    dispatch('increment');
+    dispatch('increment');
+  }
+```
+
+`action` 参数可以是任何东西, 但是常见的方式是使用对象作为 `action` 参数的内容.
+
+## 调用树
+
+编程语言的运行时通常存在一个[调用栈](https://www.freecodecamp.org/news/understanding-the-javascript-call-stack-861e41ae61d4/). 当函数 `a()` 调用函数 `b()`, 函数 `b()` 调用函数 `c()` 的时候, 在 JavaScript 引擎中针对这种情况会存储类似 `[a, b, c]` 这样的数据结构, 在这里追踪你目前运行到了哪个位置, 接下来需要运行哪部分代码. 一旦 `c` 执行结束之后, 它的调用栈就空了.

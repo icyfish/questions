@@ -4,3 +4,4 @@ import "typeface-merriweather"
 
 import './static/css/font.css';
 import './static/css/global.css';
+import './static/css/prism-night-owl.css';

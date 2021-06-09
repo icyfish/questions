@@ -11,26 +11,23 @@ description: "A Complete Guide to useEffect"
 
 TLDR Part
 
-
 ### 每次渲染都有自己的 Props 和 State
 
-开始聊 effect 之前, 我们需要先聊一聊组件的渲染. 
+开始聊 effect 之前, 我们需要先聊一聊组件的渲染.
 
 以下是一个计时器组件. 关注其中高亮的部分:
 
 ```jsx
 function Counter() {
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(0)
 
   return (
     <div>
-			// highlight-next-line
+      // highlight-next-line
       <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
     </div>
-  );
+  )
 }
 ```
 
@@ -39,9 +36,9 @@ function Counter() {
 **在上面的例子中, `count` 仅仅是个数字而已.** 内部并没有数据绑定, "观察者", "代理"等等的逻辑. 就像下面的代码示例一样, 它就是一个数字.
 
 ```jsx
-const count = 42;
+const count = 42
 // ...
-<p>You clicked {count} times</p>
+;<p>You clicked {count} times</p>
 // ...
 ```
 
@@ -50,28 +47,28 @@ const count = 42;
 ```jsx
 // 首次渲染
 function Counter() {
-	// highlight-next-line
-  const count = 0; // useState() 返回的内容
+  // highlight-next-line
+  const count = 0 // useState() 返回的内容
   // ...
-  <p>You clicked {count} times</p>
-  // ...
-}
-
-// 点击事件之后, 函数再次被调用 
-function Counter() {
-	// highlight-next-line
-  const count = 1;  // useState() 返回的内容
-  // ...
-  <p>You clicked {count} times</p>
+  ;<p>You clicked {count} times</p>
   // ...
 }
 
-// 第二次点击事件之后, 函数被调用 
+// 点击事件之后, 函数再次被调用
 function Counter() {
-	// highlight-next-line
-  const count = 2; // useState() 返回的内容
+  // highlight-next-line
+  const count = 1 // useState() 返回的内容
   // ...
-  <p>You clicked {count} times</p>
+  ;<p>You clicked {count} times</p>
+  // ...
+}
+
+// 第二次点击事件之后, 函数被调用
+function Counter() {
+  // highlight-next-line
+  const count = 2 // useState() 返回的内容
+  // ...
+  ;<p>You clicked {count} times</p>
   // ...
 }
 ```
@@ -96,29 +93,24 @@ function Counter() {
 
 ```jsx
 function Counter() {
-  const [count, setCount] = useState(0);
-	// highlight-start
+  const [count, setCount] = useState(0)
+  // highlight-start
   function handleAlertClick() {
     setTimeout(() => {
-      alert('You clicked on: ' + count);
-    }, 3000);
+      alert("You clicked on: " + count)
+    }, 3000)
   }
-	// highlight-end
-
+  // highlight-end
 
   return (
     <div>
       <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
-		// highlight-start
-      <button onClick={handleAlertClick}>
-        Show alert
-      </button>
-		// highlight-end
+      <button onClick={() => setCount(count + 1)}>Click me</button>
+      // highlight-start
+      <button onClick={handleAlertClick}>Show alert</button>
+      // highlight-end
     </div>
-  );
+  )
 }
 ```
 
@@ -133,6 +125,7 @@ function Counter() {
 你认为 `alert` 的结果是什么呢? 是 `alert` 时的 state 值 5, 还是点击时的 state 值 3?
 
 ---
+
 剧透:
 
 ---
@@ -155,21 +148,21 @@ function Counter() {
 
 ```js
 function sayHi(person) {
-	// highlight-next-line
-  const name = person.name;
+  // highlight-next-line
+  const name = person.name
   setTimeout(() => {
-    alert('Hello, ' + name);
-  }, 3000);
+    alert("Hello, " + name)
+  }, 3000)
 }
 
-let someone = {name: 'Dan'};
-sayHi(someone);
+let someone = { name: "Dan" }
+sayHi(someone)
 
-someone = {name: 'Yuzhi'};
-sayHi(someone);
+someone = { name: "Yuzhi" }
+sayHi(someone)
 
-someone = {name: 'Dominic'};
-sayHi(someone);
+someone = { name: "Dominic" }
+sayHi(someone)
 ```
 
 在这个[示例](https://codesandbox.io/s/mm6ww11lk8)中, 外部的 `someone` 变量被多次重新赋值. (就像在 React 中, 当前组件的 state 不断变化一样. ) **在 `sayHi` 内部, 有一个变量 `name`, 它会读取 `person` 的 `name` 属性.** 这个变量在函数内部, 每次调用之间都是独立的. 因此, 当定时器的回调被调用的时候, 每次 alert 都会"记住"自己的 `name`.
@@ -179,39 +172,39 @@ sayHi(someone);
 ```jsx
 // 首次渲染
 function Counter() {
-	// highlight-next-line
-  const count = 0; // useState() 返回的内容
+  // highlight-next-line
+  const count = 0 // useState() 返回的内容
   // ...
   function handleAlertClick() {
     setTimeout(() => {
-      alert('You clicked on: ' + count);
-    }, 3000);
+      alert("You clicked on: " + count)
+    }, 3000)
   }
   // ...
 }
 
 // 点击事件之后函数被重新调用
 function Counter() {
-	// highlight-next-line
-  const count = 1; // useState() 返回的内容
+  // highlight-next-line
+  const count = 1 // useState() 返回的内容
   // ...
   function handleAlertClick() {
     setTimeout(() => {
-      alert('You clicked on: ' + count);
-    }, 3000);
+      alert("You clicked on: " + count)
+    }, 3000)
   }
   // ...
 }
 
 // 又一次点击事件, 函数被重新调用
 function Counter() {
-	// highlight-next-line
-  const count = 2; // useState() 返回的内容
+  // highlight-next-line
+  const count = 2 // useState() 返回的内容
   // ...
   function handleAlertClick() {
     setTimeout(() => {
-      alert('You clicked on: ' + count);
-    }, 3000);
+      alert("You clicked on: " + count)
+    }, 3000)
   }
   // ...
 }
@@ -225,13 +218,13 @@ function Counter() {
   // ...
   function handleAlertClick() {
     setTimeout(() => {
-		// highlight-next-line
-      alert('You clicked on: ' + 0);
-    }, 3000);
+      // highlight-next-line
+      alert("You clicked on: " + 0)
+    }, 3000)
   }
   // ...
-	// highlight-next-line
-  <button onClick={handleAlertClick} /> // 内部值为 0 的版本
+  // highlight-next-line
+  ;<button onClick={handleAlertClick} /> // 内部值为 0 的版本
   // ...
 }
 
@@ -240,13 +233,13 @@ function Counter() {
   // ...
   function handleAlertClick() {
     setTimeout(() => {
-			// highlight-next-line
-      alert('You clicked on: ' + 1);
-    }, 3000);
+      // highlight-next-line
+      alert("You clicked on: " + 1)
+    }, 3000)
   }
   // ...
-	// highlight-next-line
-  <button onClick={handleAlertClick} /> // 内部值为 1 的版本
+  // highlight-next-line
+  ;<button onClick={handleAlertClick} /> // 内部值为 1 的版本
   // ...
 }
 
@@ -255,13 +248,13 @@ function Counter() {
   // ...
   function handleAlertClick() {
     setTimeout(() => {
-			// highlight-next-line
-      alert('You clicked on: ' + 2);
-    }, 3000);
+      // highlight-next-line
+      alert("You clicked on: " + 2)
+    }, 3000)
   }
   // ...
-	// highlight-next-line
-  <button onClick={handleAlertClick} />  // 内部值为 2 的版本
+  // highlight-next-line
+  ;<button onClick={handleAlertClick} /> // 内部值为 2 的版本
   // ...
 }
 ```
@@ -270,31 +263,29 @@ function Counter() {
 
 **对于每一次渲染, 内部的 props 和 state 始终都是一致的, 并且每次渲染都是独立的.** 既然每次渲染的 props 和 state 各自独立, 消费它们的部分(包括事件处理器), 在渲染间也各自独立, 都从属于特定的渲染. 因此事件处理器内部的异步函数也会"看到"同样的 `count` 值.
 
-*边注: 我在 `handleAlertClick` 中直接使用了 `count` 值. 这样的替换是安全的, 因为在一次渲染流程中,  `count` 值不可能有变化. 它被声明为 `const`, 且是一个不可变的数字. 同样的原则在对象中仍然适用, 不过我们必须要确保避免改变(mutate)状态的值. 用一个全新创建的对象去调用 `setSomething(newObj)`, 而不改变这个对象就可以了. 这样的话, 前一次渲染的状态(state)值就能够保持不被下一次渲染修改.*
+_边注: 我在 `handleAlertClick` 中直接使用了 `count` 值. 这样的替换是安全的, 因为在一次渲染流程中, `count` 值不可能有变化. 它被声明为 `const`, 且是一个不可变的数字. 同样的原则在对象中仍然适用, 不过我们必须要确保避免改变(mutate)状态的值. 用一个全新创建的对象去调用 `setSomething(newObj)`, 而不改变这个对象就可以了. 这样的话, 前一次渲染的状态(state)值就能够保持不被下一次渲染修改._
 
 ### 每次渲染都有自己的副作用
 
 这篇文章的主要内容本该是副作用(effect)的, 现在我们会开始详细介绍它. 其实, 副作用的和以上两部分是一样的, 每次渲染都有自己的副作用.
 
-现在我们回到 React [文档](https://reactjs.org/docs/hooks-effect.html)中的一个例子: 
+现在我们回到 React [文档](https://reactjs.org/docs/hooks-effect.html)中的一个例子:
 
 ```jsx
 function Counter() {
-  const [count, setCount] = useState(0);
-// highlight-start
+  const [count, setCount] = useState(0)
+  // highlight-start
   useEffect(() => {
-    document.title = `You clicked ${count} times`;
-  });
-// highlight-end
+    document.title = `You clicked ${count} times`
+  })
+  // highlight-end
 
   return (
     <div>
       <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
     </div>
-  );
+  )
 }
 ```
 
@@ -315,13 +306,13 @@ function Counter() {
 function Counter() {
   // ...
   useEffect(
-		// highlight-start
+    // highlight-start
     // 首次渲染的副作用函数
     () => {
-      document.title = `You clicked ${0} times`;
+      document.title = `You clicked ${0} times`
     }
-		// highlight-end
-  );
+    // highlight-end
+  )
   // ...
 }
 
@@ -329,32 +320,32 @@ function Counter() {
 function Counter() {
   // ...
   useEffect(
-		// highlight-start
+    // highlight-start
     // 第二次渲染的副作用函数
     () => {
-      document.title = `You clicked ${1} times`;
+      document.title = `You clicked ${1} times`
     }
-		// highlight-end
-  );
+    // highlight-end
+  )
   // ...
 }
 
 // 又一次点击事件, 函数被重新调用
 function Counter() {
   // ...
-	// highlight-start
+  // highlight-start
   useEffect(
     // 第三次渲染的副作用函数
     () => {
-      document.title = `You clicked ${2} times`;
+      document.title = `You clicked ${2} times`
     }
-		// highlight-end
-  );
+    // highlight-end
+  )
   // ..
 }
 ```
 
-React 会记住每一次你所提供的副作用方法, 在当次渲染结束, UI 呈现出对应变化之后调用这个副作用方法. 
+React 会记住每一次你所提供的副作用方法, 在当次渲染结束, UI 呈现出对应变化之后调用这个副作用方法.
 
 尽管这个副作用方法看起来是一样的(功能: 更新文档的标题), 但是实际上每一次渲染这个方法都是不一样的 -- 并且每一个副作用方法都会看到"渲染"当次的 props 和 state.
 
@@ -368,7 +359,7 @@ React 会记住每一次你所提供的副作用方法, 在当次渲染结束, U
 
 - **React:** 当 state 值为 `0` 的时候, 给我你希望渲染的 UI.
 - **组件:**
-  - 这是我要渲染的内容: `<p>You clicked 0 times</p>`. 
+  - 这是我要渲染的内容: `<p>You clicked 0 times</p>`.
   - 渲染结束之后请执行这个副作用方法: `() => { document.title = 'You clicked 0 times' }`.
 - **React:** 好的, 更新 UI. Hey, 浏览器, 我想要在 DOM 中添加一些内容.
 - **浏览器:** 好的, 我把它们绘制到屏幕中.
@@ -381,47 +372,46 @@ React 会记住每一次你所提供的副作用方法, 在当次渲染结束, U
 
 - **组件:** Hey, React, 把我的状态(state)值设置为 `1`.
 - **React:** 当状态更新为 `1` 的时候, 把对应的 UI 返回给我吧.
-- **组件:** 
+- **组件:**
   - 这是渲染的结果: `<p>You clicked 1 times</p>`.
   - 记得执行这个副作用方法: `() => { document.title = 'You clicked 1 times' }`.
 - **React:** 好的, 更新 UI. Hey, 浏览器, 我已经修改了 DOM 了.
 - **浏览器:** 好的, 我把它们绘制到屏幕中.
 - **React:** OK, 我现在开始执行副作用方法.
   - 执行 `() => { document.title = 'You clicked 1 times' }`.
-  
+
 ---
 
-### 每次渲染都有自己的任何东西
+### 每次渲染的所有值都属于当次渲染
 
 **我们知道了, 副作用方法在每次渲染之后都会执行, 从概念上可以将副作用方法理解为组件输出内容的一部分, 并且副作用方法能够"看到"当次渲染的 props 和 state.**
 
-现在我们来做一次实验. 查看下面的代码: 
+现在我们来做一次实验. 查看下面的代码:
 
 ```jsx
 function Counter() {
-  const [count, setCount] = useState(0);
-	// highlight-start
+  const [count, setCount] = useState(0)
+  // highlight-start
   useEffect(() => {
     setTimeout(() => {
-      console.log(`You clicked ${count} times`);
-    }, 3000);
-  });
-	// highlight-end
+      console.log(`You clicked ${count} times`)
+    }, 3000)
+  })
+  // highlight-end
   return (
     <div>
       <p>You clicked {count} times</p>
-      <button onClick={() => setCount(count + 1)}>
-        Click me
-      </button>
+      <button onClick={() => setCount(count + 1)}>Click me</button>
     </div>
-  );
+  )
 }
 ```
 
 如果我在每次延迟的时间段内点击多次, 最终输出的值会是怎样的呢?
 
 ---
-剧透 
+
+剧透
 
 ---
 
@@ -431,5 +421,55 @@ function Counter() {
 
 你可能会觉得: "当然是这样输出的, 否则会怎样输出呢?"
 
-不过, `this.state` 在类组件中并不是这样工作的
+不过, `this.state` 在类组件中并不是这样工作的. 很多人会把 `useEffect` 看作是和[类中](https://codesandbox.io/s/kkymzwjqz3)的`componentDidUpdate` 类似的方法:
 
+```jsx
+  componentDidUpdate() {
+    setTimeout(() => {
+      console.log(`You clicked ${this.state.count} times`);
+    }, 3000);
+  }
+```
+
+实际上并不是这样的, `this.state.count` 始终是最新的 `count` 值, 但是 `useEffect` 中的则是当次渲染的值, 因此以上代码的结果, 输出的会是 `5`:
+
+![timeout_counter_class](./timeout_counter_class.gif)
+
+我觉得有点讽刺的是, Hooks 的实现十分依赖 JavaScript 中的闭包,
+I think it’s ironic that Hooks rely so much on JavaScript closures, and yet it’s the class implementation that suffers from the canonical wrong-value-in-a-timeout confusion that’s often associated with closures. This is because the actual source of the confusion in this example is the mutation (React mutates this.state in classes to point to the latest state) and not closures themselves.
+
+**当我们需要锁定一个永远不会变化的值的时候, 使用闭包是最合适的手段. 这使得我们很容易能够推出正确答案, 因为归根结底你正在读取的值始终是一个常量.** 既然我们现在已经知道了如何维持渲染时的 props 和 state, 可以开始尝试[使用闭包](https://codesandbox.io/s/w7vjo07055)对 class 版本的代码进行改造.
+
+### Swimming Against the Tide
+
+现在我们已经得到了一个共识: 函数式组件在渲染时, 内部的每一项(包括事件处理器, 副作用方法, 超时时间, API 调用等)都会"捕捉"渲染当时的 props 和 state.
+
+因此以下两个例子其实是一致的:
+
+```jsx
+function Example(props) {
+  useEffect(() => {
+    setTimeout(() => {
+      // highlight-next-line
+      console.log(props.counter)
+    }, 1000)
+  })
+  // ...
+}
+```
+
+```jsx
+function Example(props) {
+  // highlight-next-line
+  const counter = props.counter
+  useEffect(() => {
+    setTimeout(() => {
+      // highlight-next-line
+      console.log(counter)
+    }, 1000)
+  })
+  // ...
+}
+```
+
+**从上面的代码可以看出, 不管是不是在组件中提前读取 state 或者 props 的值, 对副作用函数中读取到的结果其实都没有影响.** 在单次渲染的作用域内, props 和 state 

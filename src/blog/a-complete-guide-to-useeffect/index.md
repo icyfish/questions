@@ -440,7 +440,7 @@ I think it’s ironic that Hooks rely so much on JavaScript closures, and yet it
 
 **当我们需要锁定一个永远不会变化的值的时候, 使用闭包是最合适的手段. 这使得我们很容易能够推出正确答案, 因为归根结底你正在读取的值始终是一个常量.** 既然我们现在已经知道了如何维持渲染时的 props 和 state, 可以开始尝试[使用闭包](https://codesandbox.io/s/w7vjo07055)对 class 版本的代码进行改造.
 
-### Swimming Against the Tide
+### 逆流而上
 
 现在我们已经得到了一个共识: 函数式组件在渲染时, 内部的每一项(包括事件处理器, 副作用方法, 超时时间, API 调用等)都会"捕捉"渲染当时的 props 和 state.
 
@@ -472,4 +472,62 @@ function Example(props) {
 }
 ```
 
-**从上面的代码可以看出, 不管是不是在组件中提前读取 state 或者 props 的值, 对副作用函数中读取到的结果其实都没有影响.** 在单次渲染的作用域内, props 和 state 
+**从上面的代码可以看出, 不管是不是在组件中提前读取 state 或者 props 的值, 对副作用函数中读取到的结果其实都没有影响.** 在单次渲染的作用域内, props 和 state 始终会保持不变. (将 props 解构能够使得这个概念更容易理解.)
+
+在某些场景下, 我们可能会希望能够副作用函数的回调中读取到最新的值而不是渲染当时的值. 最简单的方式是使用 `ref`, 在这篇[文章](https://overreacted.io/how-are-function-components-different-from-classes/)的最后一部分我们有提及到相关的概念.
+
+有一点需要注意的是, 当我们希望在过去的渲染中读取到未来的 props 和 state 时, 我们实际上在逆流前进. 这当然没有错(在某些情况下甚至是必要的), 不过这样的做法看起来比较"不干净", 违反了现有的模式. 其实 React 团队是刻意把函数式组件的行为设计成这样的, 如此依赖, 用户就能够很显而易见地发现代码的缺陷. 在类式组件中, 发现这类问题就比较困难.
+
+这里有[另一个版本计时器的例子](https://codesandbox.io/s/rm7z22qnlp), 模拟了类式组件的行为:
+
+```jsx
+function Example() {
+  const [count, setCount] = useState(0);
+  // highlight-next-line
+  const latestCount = useRef(count);
+
+  useEffect(() => {
+  // highlight-start
+    // Set the mutable latest value
+    latestCount.current = count;
+  // highlight-end
+    setTimeout(() => {
+    // highlight-start
+      // Read the mutable latest value
+      console.log(`You clicked ${latestCount.current} times`);
+    // highlight-end
+    }, 3000);
+  });
+  // ...
+```
+
+![timeout_counter_refs](./timeout_counter_refs.gif)
+
+在 React 中修改(mutate)某些值或许看起来会很奇怪. 但是其实在类式组件中, React 就是这样为 `this.state` 赋值的. 与获取渲染当时的 props 和 state 不同的是, 读取 `latestCount.current` 的值, 获取到的结果无法得到任何的保证, 在某一次回调中是这样的结果, 到了下一次或许又不一样了. 因为它的值是可变的. 这也是为什么, 我们不愿意将这样的行为设置成默认行为.
+
+## Cleanup 函数
+
+[文档中提到](https://reactjs.org/docs/hooks-effect.html#effects-with-cleanup), 某些副作用还需要存在对应的清除副作用的阶段. 本质上来说, 在这个阶段中我们做的事情, 就是撤销副作用(比如取消订阅事件.)
+
+查看下面的代码: 
+
+```jsx
+  useEffect(() => {
+    ChatAPI.subscribeToFriendStatus(props.id, handleStatusChange);
+    return () => {
+      ChatAPI.unsubscribeFromFriendStatus(props.id, handleStatusChange);
+    };
+  });
+```
+
+假如在首次渲染时, `props` 的值为 `{id: 10}`, 第二次渲染时, 值为 `{id: 20}`. 你或许会认为渲染流程是这样发生的:
+
+- React 为 `{id: 10}` 清除副作用.
+- React 为 `{id: 20}` 渲染对应的 UI.
+- React 为 `{id: 20}` 执行对应的副作用方法.
+
+(但是实际情况并不是这样的.)
+
+如果你建立以上的心智模型, 就会认为清除副作用的函数"看到了"旧的 props, 因为这个函数是在重新渲染之前执行的, 然后新的副作用函数"看到了"新的 props. 这个心智模型对于类式组件来说, 是完全正确的, 但是对于函数式组件, 情况并不是这样. 我们来看看原因是什么.
+
+React 执行副作用方法的时机是[浏览器绘制需要渲染的内容之后](https://medium.com/@dan_abramov/this-benchmark-is-indeed-flawed-c3d6b5b6f97f). 这样能够使得我们的应用性能更

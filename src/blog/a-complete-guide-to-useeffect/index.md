@@ -876,3 +876,28 @@ _(依赖项中的内容始终没有区别, 因此跳过副作用函数的更新)
 2. 用函数的方式更新状态
 ### Functional Updates and Google Docs
 
+- 协作编辑
+- `useState` 功能限制
+### Decoupling Updates from Actions 将更新从 actions 中解耦
+
+现在修改以上的示例, 改为存在两个状态相关的变量: `count` 和 `step`. 我们的间隔执行函数不是每秒加 1, 而是每秒加上 `step` 变量所指的值:  [] 代码 & demo
+
+此刻我们**并没有欺骗** React.  因为在副作用函数中使用了 `step` , 我们在依赖参数中也加上了它, 因此函数执行的结果始终是准确的.
+
+当前的行为是这样的, 一旦 `step` 的值发生变化, 就会重新开始执行这个间隔函数, 因为 `step` 在依赖数组中. 大多数情况下, 这就是最合适的结果, 销毁副作用函数并创建一个全新的副作用函数, 除非有特别合适的理由, 否则我们不应该避免这种模式.
+
+如果我们希望的情况是, `step`变化不会引起副作用函数的销毁和重新创建. 应该怎样把 `step` 从副作用函数的依赖数组中删除呢?
+
+**当我们遇到这样的场景, state 中的某个值依赖另一个 state 中的值, 可以考虑使用 `useReducer` 来实现达到更新状态的目的.**
+
+当你发现你写的设置状态相关的代码变成如下这样的时候: `setSomething(something => ...)`, 就可以开始考虑使用 reducer 了. reducer 能够帮助我们: **decouple expressing the “actions” that happened in your component from how the state updates in response to them.**
+
+现在用 `dispatch` 依赖来替换代码中的 `step` 依赖: [] 代码 & demo
+
+你或许会疑惑: "这样的方式为什么更好呢?" 因为 **React 会确保 `dispatch` 函数在组件被创建之后, 函数本身始终不会变化. 因此在以上的实例中, 我们不再需要重新订阅 interval 函数.**
+
+至此, 已经解决了我们的问题!
+
+*(你或许会在依赖数组中省去 `dispatch`, `setState`, 或者 `useRef` 这些函数, 因为它们始终不会变化, 不过其实将它们写入依赖项数组是更好的实践.)*
+
+除了读取副作用函数内部的 state 之外, `dispatch` 函数还针对

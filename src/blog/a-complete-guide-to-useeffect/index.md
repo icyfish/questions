@@ -724,7 +724,7 @@ const newDeps = ["Dan"]
 
 如果依赖数组中的某个值在渲染前后有所差异, 那么这个副作用函数就必须执行. 同步所有这些值.
 
-## 要确保依赖数组中的参数的准确性 不要欺骗 React
+### 要确保依赖数组中的参数的准确性 不要欺骗 React
 
 欺骗 React 关于依赖数组值的内容会带来比较不好的影响. <mark>Intuitively, this makes sense, but I’ve seen pretty much everyone who tries useEffect with a mental model from classes try to cheat the rules. (And I did that too at first!)</mark>
 
@@ -750,7 +750,7 @@ function SearchResults() {
 
 在我们查看解决方案之前, 先更深入地了解一下我们的问题.
 
-## 当你对 React 撒谎 传入了错误的依赖参数会发生什么呢
+### 当你对 React 撒谎 传入了错误的依赖参数会发生什么
 
 如果依赖数组中包含了所有副作用函数会用到的值, React 就能够知道何时需要重新执行副作用函数:
 
@@ -845,6 +845,34 @@ function Counter() {
 }
 ```
 
-由于在依赖参数中传递了一个空数组, 表明了我们的副作用函数不依赖任何值, 但是实际上它存在依赖其他值的部分.
+由于在依赖参数中传递了一个空数组, 表明了我们的副作用函数不依赖任何值, 但是实际上副作用函数中存在依赖其他值的部分. 
 
-我们的副作用函数使用到了 `count`, 组件内部, 覅作用函数
+我们的副作用函数使用到了 `count`, 这个值声明于组件之内, 副作用函数之外:
+
+```jsx
+// highlight-next-line
+ const count = // ...
+
+  useEffect(() => {
+    const id = setInterval(() => {
+  // highlight-next-line
+      setCount(count + 1);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+```
+
+因此, 将依赖参数设置为 `[]` 会引起 bug. React 会比较依赖项数组中的内容, 然后跳过副作用函数的更新:
+
+![](./interval-wrong.gif)
+
+_(依赖项中的内容始终没有区别, 因此跳过副作用函数的更新)_
+
+这样的问题比较难定位. 因此, 我建议大家在传递依赖项参数的时候对 React 保持诚实, 声明所有依赖参数. (我们提供了一个 [lint 规则插件](https://github.com/facebook/react/issues/14920) 以供用户在开发阶段使用.)
+
+### Two Ways to Be Honest About Dependencies
+
+1. 在依赖项数组中声明副作用函数中的所有依赖项
+2. 用函数的方式更新状态
+### Functional Updates and Google Docs
+

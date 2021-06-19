@@ -1288,4 +1288,146 @@ function SearchResults() {
 }
 ```
 
-因为使用了 `useCallback`, 如果 `query` 参数始终保持不变的话, `getFetchUrl` 也就不会有变化, 那么副作用函数也就不会重新执行. 但是如果 `query` 变化了, `getFetchUrl` 也会同时发生变化, 然后重新请求数据. 这就好像是当我们修改 E
+因为使用了 `useCallback`, 如果 `query` 参数始终保持不变的话, `getFetchUrl` 也就不会有变化, 那么副作用函数也就不会重新执行. 但是如果 `query` 变化了, `getFetchUrl` 也会同时发生变化, 然后重新请求数据. 这就好像是当我们修改 Excel 中的某个单元格之后, 其他单元格中的数据如果依赖这个单元格的数据, 就会根据新的数据重新计算对应的结果.
+
+拥抱了数据流和同步的心智模型之后, 就会产生这样的结果. **同样的方式对于函数组件的 props 也一样奏效:**
+
+```jsx
+function Parent() {
+  const [query, setQuery] = useState('react');
+
+  // ✅ 直到 query 变化的时候, fetchData 才会变化
+  const fetchData = useCallback(() => {
+    const url = 'https://hn.algolia.com/api/v1/search?query=' + query;
+    // ... 读取数据然后返回相应的数据 ...
+  }, [query]);  // ✅  依赖项准确 
+
+  return <Child fetchData={fetchData} />
+}
+
+function Child({ fetchData }) {
+  let [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetchData().then(setData);
+  }, [fetchData]); // ✅  依赖项准确 
+
+  // ...
+}
+```
+
+由于 `fetchData` 存在于 `Parent` 组件内部, 同时只有当 `query` 变化的时候, `fetchData` 才会变化, 因此我们的 `Child` 组件, 只有在需要的时机才会重新获取数据.
+
+### 函数是数据流的一部分吗
+
+很有意思的是, 这种模式在函数式组件下就完全不适用了, 这也从另一方面体现出了副作用函数的心智模型和生命周期模式存在的区别. 查看下面的代码: 
+
+```jsx
+class Parent extends Component {
+  state = {
+    query: 'react'
+  };
+  // highlight-start
+  fetchData = () => {
+    const url = 'https://hn.algolia.com/api/v1/search?query=' + this.state.query;
+    // ... 请求数据并且执行一些其他操作 ...
+  };
+  // highlight-end
+  render() {
+    return <Child fetchData={this.fetchData} />;
+  }
+}
+
+class Child extends Component {
+  state = {
+    data: null
+  };
+  // highlight-start
+  componentDidMount() {
+    this.props.fetchData();
+  }
+  // highlight-end
+  render() {
+    // ...
+  }
+}
+```
+
+你或许会认为: "我们已经有一个共识了: `useEffect` 就像是 `componentDidMount` 和 `componentDidUpdate` 的结合体, 你不需要时时刻刻重申这个观点!" **但是实际上, 这个观点在某些方面是错的, 对于 `componentDidUpdate`, 就存在一些问题**: 
+
+```jsx
+class Child extends Component {
+  state = {
+    data: null
+  };
+  componentDidMount() {
+    this.props.fetchData();
+  }
+  componentDidUpdate(prevProps) {
+    // 🔴 这种情况永远不会发生
+   if (this.props.fetchData !== prevProps.fetchData) {
+      this.props.fetchData();
+    }
+  }
+  render() {
+    // ...
+  }
+}
+```
+
+当然了, `fetchData` 是一个类方法!(也可以说是类的属性 -- 但是这并不能改变任何事.) 即使 state 产生变化, 这个类方法也不会随之变化. 因此 `this.props.fetchData` 的值始终与 `prevProps.fetchData` 的值一致, 因此遇上代码中的情况永远不会发生. 那么我们可以直接移除这种情况吗?
+
+```jsx
+ componentDidUpdate(prevProps) {
+    this.props.fetchData();
+  }
+```
+
+但是如果代码是以上这样的话, 每一次重新渲染都会重新请求数据. (在组件树中添加一些动画会更直观得看到呈现出的变化.) Maybe let’s bind it to a particular query?
+
+```jsx
+  render() {
+    return <Child fetchData={this.fetchData.bind(this, this.state.query)} />;
+  }
+```
+
+但是即使 `query` 没有变化, `this.props.fetchData !== prevProps.fetchData` 的值始终是 `true`. 因此始终会重新请求数据.
+
+针对这个复杂的问题, 唯一的解决方案是将 `query` 参数本身传递到 `Child` 组件中. `Child` 组件实际上并不会使用 `query` 参数, 但是在 `query` 变化的时候, 需要依赖 `Child` 组件的重新渲染以发起数据的重新请求:
+
+```jsx
+class Parent extends Component {
+  state = {
+    query: 'react'
+  };
+  fetchData = () => {
+    const url = 'https://hn.algolia.com/api/v1/search?query=' + this.state.query;
+    // ... 请求数据然后进行一些其他操作...
+  };
+  render() {
+    // highlight-next-line
+    return <Child fetchData={this.fetchData} query={this.state.query} />;
+  }
+}
+
+class Child extends Component {
+  state = {
+    data: null
+  };
+  componentDidMount() {
+    this.props.fetchData();
+  }
+  componentDidUpdate(prevProps) {
+    // highlight-start
+    if (this.props.query !== prevProps.query) {
+      this.props.fetchData();
+    }
+    // highlight-end
+  }
+  render() {
+    // ...
+  }
+}
+```
+
+很长一段时间, 我们使用的都是 React 类组件. 

@@ -845,21 +845,20 @@ function Counter() {
 }
 ```
 
-由于在依赖参数中传递了一个空数组, 表明了我们的副作用函数不依赖任何值, 但是实际上副作用函数中存在依赖其他值的部分. 
+由于在依赖参数中传递了一个空数组, 表明了我们的副作用函数不依赖任何值, 但是实际上副作用函数中存在依赖其他值的部分.
 
 我们的副作用函数使用到了 `count`, 这个值声明于组件之内, 副作用函数之外:
 
 ```jsx
 // highlight-next-line
- const count = // ...
-
-  useEffect(() => {
-    const id = setInterval(() => {
-  // highlight-next-line
-      setCount(count + 1);
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
+const count = useEffect(() => {
+  // ...
+  const id = setInterval(() => {
+    // highlight-next-line
+    setCount(count + 1)
+  }, 1000)
+  return () => clearInterval(id)
+}, [])
 ```
 
 因此, 将依赖参数设置为 `[]` 会引起 bug. React 会比较依赖项数组中的内容, 然后跳过副作用函数的更新:
@@ -874,34 +873,36 @@ _(依赖项中的内容始终没有区别, 因此跳过副作用函数的更新)
 
 1. 在依赖项数组中声明副作用函数中的所有依赖项
 2. 用函数的方式更新状态
+
 ### Functional Updates and Google Docs
 
 - 协作编辑
 - `useState` 功能限制
+
 ### 将更新从 actions 中解耦
 
-现在修改以上的示例, 改为存在两个状态相关的变量: `count` 和 `step`. 我们的间隔执行函数不是每秒加 1, 而是每秒加上 `step` 变量所指的值: 
+现在修改以上的示例, 改为存在两个状态相关的变量: `count` 和 `step`. 我们的间隔执行函数不是每秒加 1, 而是每秒加上 `step` 变量所指的值:
 
 ```jsx
 function Counter() {
-  const [count, setCount] = useState(0);
-  const [step, setStep] = useState(1);
+  const [count, setCount] = useState(0)
+  const [step, setStep] = useState(1)
 
   useEffect(() => {
     const id = setInterval(() => {
       // highlight-next-line
-      setCount(c => c + step);
-    }, 1000);
-    return () => clearInterval(id);
-      // highlight-next-line
-  }, [step]);
+      setCount(c => c + step)
+    }, 1000)
+    return () => clearInterval(id)
+    // highlight-next-line
+  }, [step])
 
   return (
     <>
       <h1>{count}</h1>
       <input value={step} onChange={e => setStep(Number(e.target.value))} />
     </>
-  );
+  )
 }
 ```
 
@@ -921,17 +922,17 @@ function Counter() {
 
 ```jsx
 // highlight-next-line
-const [state, dispatch] = useReducer(reducer, initialState);
-const { count, step } = state;
+const [state, dispatch] = useReducer(reducer, initialState)
+const { count, step } = state
 
 useEffect(() => {
   const id = setInterval(() => {
+    // highlight-next-line
+    dispatch({ type: "tick" }) // Instead of setCount(c => c + step);
+  }, 1000)
+  return () => clearInterval(id)
   // highlight-next-line
-    dispatch({ type: 'tick' }); // Instead of setCount(c => c + step);
-  }, 1000);
-  return () => clearInterval(id);
-  // highlight-next-line
-}, [dispatch]);
+}, [dispatch])
 ```
 
 (这里是[代码示例](https://codesandbox.io/s/xzr480k0np))
@@ -940,7 +941,7 @@ useEffect(() => {
 
 至此, 已经解决了我们的问题!
 
-*(你或许会在依赖数组中省去 `dispatch`, `setState`, 或者 `useRef` 这些函数, 因为它们始终不会变化, 不过其实将它们写入依赖项数组是更好的实践.)*
+_(你或许会在依赖数组中省去 `dispatch`, `setState`, 或者 `useRef` 这些函数, 因为它们始终不会变化, 不过其实将它们写入依赖项数组是更好的实践.)_
 
 `dispatch` 函数做的事情, 并不是读取副作用函数内部的 state, 而是分发一个 action, 描述所发生的事情. 这样的方式使得副作用函数能够和 `step` 状态解耦. 我们的副作用函数其实并不在意我们如何更新状态. 它只是单纯地告诉我们发生了什么. reducer 函数, 则只关注产生怎样的变化的逻辑:
 
@@ -948,18 +949,18 @@ useEffect(() => {
 const initialState = {
   count: 0,
   step: 1,
-};
+}
 
 function reducer(state, action) {
-  const { count, step } = state;
+  const { count, step } = state
   // highlight-start
-  if (action.type === 'tick') {
-    return { count: count + step, step };
-  // highlight-end
-  } else if (action.type === 'step') {
-    return { count, step: action.step };
+  if (action.type === "tick") {
+    return { count: count + step, step }
+    // highlight-end
+  } else if (action.type === "step") {
+    return { count, step: action.step }
   } else {
-    throw new Error();
+    throw new Error()
   }
 }
 ```
@@ -975,25 +976,25 @@ function reducer(state, action) {
 ```jsx
 // highlight-next-line
 function Counter({ step }) {
-  const [count, dispatch] = useReducer(reducer, 0);
+  const [count, dispatch] = useReducer(reducer, 0)
 
   function reducer(state, action) {
-    if (action.type === 'tick') {
-    // highlight-next-line
-      return state + step;
+    if (action.type === "tick") {
+      // highlight-next-line
+      return state + step
     } else {
-      throw new Error();
+      throw new Error()
     }
   }
 
   useEffect(() => {
     const id = setInterval(() => {
-      dispatch({ type: 'tick' });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [dispatch]);
+      dispatch({ type: "tick" })
+    }, 1000)
+    return () => clearInterval(id)
+  }, [dispatch])
 
-  return <h1>{count}</h1>;
+  return <h1>{count}</h1>
 }
 ```
 
@@ -1038,18 +1039,18 @@ function SearchResults() {
 function SearchResults() {
   // 假设这是个很长的函数
   function getFetchUrl() {
-    return 'https://hn.algolia.com/api/v1/search?query=react';
+    return "https://hn.algolia.com/api/v1/search?query=react"
   }
 
   // 假设这也是个很长的函数
   async function fetchData() {
-    const result = await axios(getFetchUrl());
-    setData(result.data);
+    const result = await axios(getFetchUrl())
+    setData(result.data)
   }
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   // ...
 }
@@ -1059,23 +1060,23 @@ function SearchResults() {
 
 ```jsx
 function SearchResults() {
-  const [query, setQuery] = useState('react');
+  const [query, setQuery] = useState("react")
 
   // 假设这是个很长的函数
   function getFetchUrl() {
     // highlight-next-line
-    return 'https://hn.algolia.com/api/v1/search?query=' + query;
+    return "https://hn.algolia.com/api/v1/search?query=" + query
   }
 
   // 假设这也是个很长的函数
   async function fetchData() {
-    const result = await axios(getFetchUrl());
-    setData(result.data);
+    const result = await axios(getFetchUrl())
+    setData(result.data)
   }
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   // ...
 }
@@ -1092,16 +1093,16 @@ function SearchResults() {
     // highlight-start
     // 移动到副作用函数内部
     function getFetchUrl() {
-      return 'https://hn.algolia.com/api/v1/search?query=react';
+      return "https://hn.algolia.com/api/v1/search?query=react"
     }
     async function fetchData() {
-      const result = await axios(getFetchUrl());
-      setData(result.data);
+      const result = await axios(getFetchUrl())
+      setData(result.data)
     }
     // highlight-end
 
-    fetchData();
-  }, []); // ✅ 依赖声明正确
+    fetchData()
+  }, []) // ✅ 依赖声明正确
   // ...
 }
 ```
@@ -1114,22 +1115,22 @@ function SearchResults() {
 
 ```jsx
 function SearchResults() {
-  const [query, setQuery] = useState('react');
+  const [query, setQuery] = useState("react")
 
   useEffect(() => {
     function getFetchUrl() {
       // highlight-next-line
-      return 'https://hn.algolia.com/api/v1/search?query=' + query;
+      return "https://hn.algolia.com/api/v1/search?query=" + query
     }
 
     async function fetchData() {
-      const result = await axios(getFetchUrl());
-      setData(result.data);
+      const result = await axios(getFetchUrl())
+      setData(result.data)
     }
 
-    fetchData();
+    fetchData()
     // highlight-next-line
-  }, [query]); // ✅ 依赖项准确
+  }, [query]) // ✅ 依赖项准确
 
   // ...
 }
@@ -1156,18 +1157,18 @@ function SearchResults() {
 ```jsx
 function SearchResults() {
   function getFetchUrl(query) {
-    return 'https://hn.algolia.com/api/v1/search?query=' + query;
+    return "https://hn.algolia.com/api/v1/search?query=" + query
   }
 
   useEffect(() => {
-    const url = getFetchUrl('react');
+    const url = getFetchUrl("react")
     // ... 请求数据然后执行一些其他操作
-  }, []); // 🔴 缺少了依赖 getFetchUrl
+  }, []) // 🔴 缺少了依赖 getFetchUrl
 
   useEffect(() => {
-    const url = getFetchUrl('redux');
+    const url = getFetchUrl("redux")
     // ... 请求数据然后执行一些其他操作
-  }, []); // 🔴 缺少了依赖 getFetchUrl
+  }, []) // 🔴 缺少了依赖 getFetchUrl
 
   // ...
 }
@@ -1181,18 +1182,18 @@ function SearchResults() {
 function SearchResults() {
   // 🔴 每次渲染都会重新触发所有副作用函数的执行
   function getFetchUrl(query) {
-    return 'https://hn.algolia.com/api/v1/search?query=' + query;
+    return "https://hn.algolia.com/api/v1/search?query=" + query
   }
 
   useEffect(() => {
-    const url = getFetchUrl('react');
+    const url = getFetchUrl("react")
     // ... 请求数据然后执行一些其他操作 ...
-  }, [getFetchUrl]); // 🚧 参数依赖准确, 但是改变得太频繁了
+  }, [getFetchUrl]) // 🚧 参数依赖准确, 但是改变得太频繁了
 
   useEffect(() => {
-    const url = getFetchUrl('redux');
+    const url = getFetchUrl("redux")
     // ... 请求数据然后执行一些其他操作 ...
-  }, [getFetchUrl]); // 🚧 参数依赖准确, 但是改变得太频繁了
+  }, [getFetchUrl]) // 🚧 参数依赖准确, 但是改变得太频繁了
 
   // ...
 }
@@ -1208,20 +1209,20 @@ function SearchResults() {
 // highlight-start
 // ✅ 不会被数据流影响
 function getFetchUrl(query) {
-  return 'https://hn.algolia.com/api/v1/search?query=' + query;
+  return "https://hn.algolia.com/api/v1/search?query=" + query
 }
 // highlight-end
 
 function SearchResults() {
   useEffect(() => {
-    const url = getFetchUrl('react');
+    const url = getFetchUrl("react")
     // ... 请求数据然后执行一些其他操作 ...
-  }, []); // ✅ 依赖参数声明准确
+  }, []) // ✅ 依赖参数声明准确
 
   useEffect(() => {
-    const url = getFetchUrl('redux');
+    const url = getFetchUrl("redux")
     // ... 请求数据然后执行一些其他操作 ...
-  }, []); // ✅ 依赖参数声明准确
+  }, []) // ✅ 依赖参数声明准确
 
   // ...
 }
@@ -1234,19 +1235,19 @@ function SearchResults() {
 ```jsx
 function SearchResults() {
   // ✅ 缓存 getFetchUrl
-  const getFetchUrl = useCallback((query) => {
-    return 'https://hn.algolia.com/api/v1/search?query=' + query;
-  }, []);  // ✅ Callback 的依赖参数准确
+  const getFetchUrl = useCallback(query => {
+    return "https://hn.algolia.com/api/v1/search?query=" + query
+  }, []) // ✅ Callback 的依赖参数准确
 
   useEffect(() => {
-    const url = getFetchUrl('react');
+    const url = getFetchUrl("react")
     // ... 请求数据然后执行一些其他操作 ...
-  }, [getFetchUrl]); // ✅ Effect 的依赖参数准确
+  }, [getFetchUrl]) // ✅ Effect 的依赖参数准确
 
   useEffect(() => {
-    const url = getFetchUrl('redux');
+    const url = getFetchUrl("redux")
     // ... 请求数据然后执行一些其他操作 ...
-  }, [getFetchUrl]); // ✅ Effect 的依赖参数准确
+  }, [getFetchUrl]) // ✅ Effect 的依赖参数准确
 
   // ...
 }
@@ -1260,10 +1261,11 @@ function SearchResults() {
 
 ```jsx
 function SearchResults() {
-  const [query, setQuery] = useState('react');
-  const getFetchUrl = useCallback(() => { // 不存在 query 参数
-    return 'https://hn.algolia.com/api/v1/search?query=' + query;
-  }, []); // 🔴 遗漏了依赖项: query
+  const [query, setQuery] = useState("react")
+  const getFetchUrl = useCallback(() => {
+    // 不存在 query 参数
+    return "https://hn.algolia.com/api/v1/search?query=" + query
+  }, []) // 🔴 遗漏了依赖项: query
   // ...
 }
 ```
@@ -1272,17 +1274,18 @@ function SearchResults() {
 
 ```jsx
 function SearchResults() {
-  const [query, setQuery] = useState('react');
+  const [query, setQuery] = useState("react")
 
   // ✅ 缓存 getFetchUrl 方法, 只有 query 变化的时候 getFetchUrl 才会变化
   const getFetchUrl = useCallback(() => {
-    return 'https://hn.algolia.com/api/v1/search?query=' + query;$$
-  }, [query]);  // ✅ Callback 的依赖参数准确
+    return "https://hn.algolia.com/api/v1/search?query=" + query
+    $$
+  }, [query]) // ✅ Callback 的依赖参数准确
 
   useEffect(() => {
-    const url = getFetchUrl();
+    const url = getFetchUrl()
     // ... 请求数据然后执行一些其他操作 ...
-  }, [getFetchUrl]); // ✅ 副作用函数的依赖参数准确
+  }, [getFetchUrl]) // ✅ 副作用函数的依赖参数准确
 
   // ...
 }
@@ -1294,23 +1297,23 @@ function SearchResults() {
 
 ```jsx
 function Parent() {
-  const [query, setQuery] = useState('react');
+  const [query, setQuery] = useState("react")
 
   // ✅ 直到 query 变化的时候, fetchData 才会变化
   const fetchData = useCallback(() => {
-    const url = 'https://hn.algolia.com/api/v1/search?query=' + query;
+    const url = "https://hn.algolia.com/api/v1/search?query=" + query
     // ... 读取数据然后返回相应的数据 ...
-  }, [query]);  // ✅  依赖项准确 
+  }, [query]) // ✅  依赖项准确
 
   return <Child fetchData={fetchData} />
 }
 
 function Child({ fetchData }) {
-  let [data, setData] = useState(null);
+  let [data, setData] = useState(null)
 
   useEffect(() => {
-    fetchData().then(setData);
-  }, [fetchData]); // ✅  依赖项准确 
+    fetchData().then(setData)
+  }, [fetchData]) // ✅  依赖项准确
 
   // ...
 }
@@ -1320,31 +1323,31 @@ function Child({ fetchData }) {
 
 ### 函数是数据流的一部分吗
 
-很有意思的是, 这种模式在函数式组件下就完全不适用了, 这也从另一方面体现出了副作用函数的心智模型和生命周期模式存在的区别. 查看下面的代码: 
+很有意思的是, 这种模式在函数式组件下就完全不适用了, 这也从另一方面体现出了副作用函数的心智模型和生命周期模式存在的区别. 查看下面的代码:
 
 ```jsx
 class Parent extends Component {
   state = {
-    query: 'react'
-  };
+    query: "react",
+  }
   // highlight-start
   fetchData = () => {
-    const url = 'https://hn.algolia.com/api/v1/search?query=' + this.state.query;
+    const url = "https://hn.algolia.com/api/v1/search?query=" + this.state.query
     // ... 请求数据并且执行一些其他操作 ...
-  };
+  }
   // highlight-end
   render() {
-    return <Child fetchData={this.fetchData} />;
+    return <Child fetchData={this.fetchData} />
   }
 }
 
 class Child extends Component {
   state = {
-    data: null
-  };
+    data: null,
+  }
   // highlight-start
   componentDidMount() {
-    this.props.fetchData();
+    this.props.fetchData()
   }
   // highlight-end
   render() {
@@ -1353,20 +1356,20 @@ class Child extends Component {
 }
 ```
 
-你或许会认为: "我们已经有一个共识了: `useEffect` 就像是 `componentDidMount` 和 `componentDidUpdate` 的结合体, 你不需要时时刻刻重申这个观点!" **但是实际上, 这个观点在某些方面是错的, 对于 `componentDidUpdate`, 就存在一些问题**: 
+你或许会认为: "我们已经有一个共识了: `useEffect` 就像是 `componentDidMount` 和 `componentDidUpdate` 的结合体, 你不需要时时刻刻重申这个观点!" **但是实际上, 这个观点在某些方面是错的, 对于 `componentDidUpdate`, 就存在一些问题**:
 
 ```jsx
 class Child extends Component {
   state = {
-    data: null
-  };
+    data: null,
+  }
   componentDidMount() {
-    this.props.fetchData();
+    this.props.fetchData()
   }
   componentDidUpdate(prevProps) {
     // 🔴 这种情况永远不会发生
-   if (this.props.fetchData !== prevProps.fetchData) {
-      this.props.fetchData();
+    if (this.props.fetchData !== prevProps.fetchData) {
+      this.props.fetchData()
     }
   }
   render() {
@@ -1398,29 +1401,29 @@ class Child extends Component {
 ```jsx
 class Parent extends Component {
   state = {
-    query: 'react'
-  };
+    query: "react",
+  }
   fetchData = () => {
-    const url = 'https://hn.algolia.com/api/v1/search?query=' + this.state.query;
+    const url = "https://hn.algolia.com/api/v1/search?query=" + this.state.query
     // ... 请求数据然后进行一些其他操作...
-  };
+  }
   render() {
     // highlight-next-line
-    return <Child fetchData={this.fetchData} query={this.state.query} />;
+    return <Child fetchData={this.fetchData} query={this.state.query} />
   }
 }
 
 class Child extends Component {
   state = {
-    data: null
-  };
+    data: null,
+  }
   componentDidMount() {
-    this.props.fetchData();
+    this.props.fetchData()
   }
   componentDidUpdate(prevProps) {
     // highlight-start
     if (this.props.query !== prevProps.query) {
-      this.props.fetchData();
+      this.props.fetchData()
     }
     // highlight-end
   }
@@ -1430,4 +1433,121 @@ class Child extends Component {
 }
 ```
 
-很长一段时间, 我们使用的都是 React 类组件. 
+很长一段时间, 我们使用的都是 React 类组件, I’ve gotten so used to passing unnecessary props down and breaking encapsulation of parent components that I only realized a week ago why we had to do it.
+
+**在类组件的场景下, 函数的 props 本身并不是数据流的一部分.** Methods close over the mutable this variable so we can’t rely on their identity to mean anything. 因此, 即使我们需要的只是一个函数, 也得同时传递一些其他数据, 这样 React 才能够有机会进行 "diff". 同时, 我们无法知道从父组件中传递下来的 `this.props.fetchData` 本身是否依赖于某个 state 值, 这个值是否变化过.
+
+**使用 `useCallback` 之后, 函数就能够参与到数据流中了.** 如果函数接受的参数变化了, 那么函数本身也会变化, 否则就不会变化. 由于 `useCallback` 提供了足够的颗粒度, changes to props like props.fetchData can propagate down automatically.
+
+类似地, [`useMemo`](https://reactjs.org/docs/hooks-reference.html#usememo) 也提供了与 `useCallback` 类似的功能, 使得我们能够针对复杂的对象做出类似的处理:
+
+```jsx
+function ColorPicker() {
+  // 不要破坏 Child 组件针对属性检查的浅比较
+  // 除非 color 真正变化了
+  const [color, setColor] = useState("pink")
+  const style = useMemo(() => ({ color }), [color])
+  return <Child style={style} />
+}
+```
+
+**我想要重点声明的一点是, 对每一个函数都用 `useCallback` 包裹实际上十分笨重.** 有一种方式可以避免这种形式的代码, It’s a nice escape hatch and it’s useful when a function is both passed down and called from inside an effect in some children. Or if you’re trying to prevent breaking memoization of a child component. But Hooks lend themselves better to avoiding passing callbacks down altogether.
+
+In the above examples, I’d much prefer if fetchData was either inside my effect (which itself could be extracted to a custom Hook) or a top-level import. I want to keep the effects simple, and callbacks in them don’t help that. (“What if some props.onComplete callback changes while the request was in flight?”) You can simulate the class behavior but that doesn’t solve race conditions.
+
+### Speaking of Race Conditions
+
+一个典型的请求数据的示例会是如下这样:
+
+```jsx
+class Article extends Component {
+  state = {
+    article: null,
+  }
+  componentDidMount() {
+    this.fetchData(this.props.id)
+  }
+  async fetchData(id) {
+    const article = await API.fetchArticle(id)
+    this.setState({ article })
+  }
+  // ...
+}
+```
+
+可以看出来, 以上的代码其实是有 bug 的. 它并没有处理更新的情况. 现在我们加上更新的逻辑:
+
+```jsx
+class Article extends Component {
+  state = {
+    article: null,
+  }
+  componentDidMount() {
+    this.fetchData(this.props.id)
+  }
+  // highlight-start
+  componentDidUpdate(prevProps) {
+    if (prevProps.id !== this.props.id) {
+      this.fetchData(this.props.id)
+    }
+  }
+  // highlight-end
+  async fetchData(id) {
+    const article = await API.fetchArticle(id)
+    this.setState({ article })
+  }
+  // ...
+}
+```
+
+后面一段代码实例做出了一些优化, 但是依然存在 bug. 可能出现的问题是: 数据请求或许会出现顺序错乱的情况. 比如说, 当我用 `{id: 10}` 执行请求的时候, id 变成了 20, 我们或许会先获取到 `{id: 20}` 的请求结果, 这样的现象就会导致我们的 state 中存储的结果出现错误.
+
+这样的现象叫做: 竞争情况, 在混入了 `async` / `await` 的代码中是一个尤其典型的情况. (which assumes something waits for the result) with top-down data flow (props or state can change while we’re in the middle of an async function).
+
+副作用函数并没有解决这个问题的魔力, 虽然在你传递 `async` 函数到副作用方法中时, 会抛出一些警告信息. (之后我们会改进这个警告信息, 以披露出更多的信息, 告诉用户这样的方式会遇到的问题.)
+
+如果你使用的异步方法支持被取消的话, 就可以在清除函数中取消这个异步操作.
+
+除了这种方式之外, 还有一个简单的权宜之计, 利用一个标志来追踪请求是否被取消:
+
+```jsx
+function Article({ id }) {
+  const [article, setArticle] = useState(null)
+
+  useEffect(() => {
+    // highlight-next-line
+    let didCancel = false
+
+    async function fetchData() {
+      const article = await API.fetchArticle(id)
+      // highlight-next-line
+      if (!didCancel) {
+        setArticle(article)
+      }
+    }
+
+    fetchData()
+    // highlight-start
+    return () => {
+      didCancel = true
+    }
+    // highlight-end
+  }, [id])
+
+  // ...
+}
+```
+
+[这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)详细阐释了你应该如何处理异常情况和加载的状态, 简单描述就是将这部分逻辑提取到一个自定义的 Hook 中. 如果你想要学习更多有关于如何使用 Hook 请求数据的知识的话, 可以阅读这篇文章.
+
+### Rasing the Bar
+
+在类函数的心智模型下, side effects behave differently from the render output. UI 的渲染由 props 和 state 驱动, 并且会确保渲染结果与它们的变化始终保持一致, 但是副作用就不是这样了. 这也是经常引起 bug 的一种情况.
+
+在 `useEffect` 的心智模型下, 默认情况下所有情况都是同步的. 副作用函数变成了 React 数据流的一部分. 如果你对于每一个 `useEffect` 都正确处理的话, 组件就也能够更好地处理极端情况.
+
+但是, 处理好 `useEffect` 的成本很大也很繁琐. Writing synchronization code that handles edge cases well is inherently more difficult than firing one-off side effects that aren’t consistent with rendering.
+
+This could be worrying if useEffect was meant to be the tool you use most of the time. However, it’s a low-level building block. It’s an early time for Hooks so everybody uses low-level ones all the time, especially in tutorials. But in practice, it’s likely the community will start moving to higher-level Hooks as good APIs gain momentum.
+
+我曾经见过很多应用, 实现了一些自己的 Hooks, 比如 `useFetch`, 封装了应用的验证逻辑, `useTheme`, 利用了 theme 的 context. 一旦我们封装了类似的自定义 Hooks, 就不会经常用到 `useEffect`. 

@@ -13,7 +13,7 @@ TLDR Part
 
 ### 每次渲染都有自己的 Props 和 State
 
-开始聊 effect 之前, 我们需要先聊一聊组件的渲染.
+开始聊 effect 之前, 我们先开始聊一聊组件的渲染.
 
 以下是一个计时器组件. 关注其中高亮的部分:
 
@@ -31,14 +31,14 @@ function Counter() {
 }
 ```
 
-这代表这什么呢? `count` 是否在时刻关注我们的状态(state)变化, 然后自动更新呢? 作为一个十分符合直觉的答案, 这样的想法可能会在你刚开始学习 React 的时候给你带来比较大的帮助. 但是实际上, 这个理解并不准确. 我写过一篇关于这个话题的文章, 这才是[准确的心智模型](https://overreacted.io/react-as-a-ui-runtime/). <mark>加上译文</mark>
+以上的代码实际上发生了什么呢? `count` 是不是在时刻关注我们的状态(state)变化, 然后根据这个变化自动更新呢? 这个猜测十分符合直觉, 可能会在你刚开始学习 React 的时候给你带来比较大的帮助. 但是实际上, 这个理解并不准确. 我写过一篇关于这个话题的文章, 这才是[准确的心智模型](https://overreacted.io/react-as-a-ui-runtime/). <mark>加上译文(react as a ui runtime</mark>
 
-**在上面的例子中, `count` 仅仅是个数字而已.** 内部并没有数据绑定, "观察者", "代理"等等的逻辑. 就像下面的代码示例一样, 它就是一个数字.
+**在上面的例子中, `count` 仅仅是个数字而已.** 内部并没有"数据绑定", "观察者", "代理"等等的逻辑. 就像下面的代码示例一样, 它仅仅只是一个数字:
 
 ```jsx
 const count = 42
 // ...
-;<p>You clicked {count} times</p>
+<p>You clicked {count} times</p>
 // ...
 ```
 
@@ -54,28 +54,28 @@ function Counter() {
   // ...
 }
 
-// 点击事件之后, 函数再次被调用
+// 点击事件之后, 函数 (Counter组件) 再次被调用
 function Counter() {
   // highlight-next-line
   const count = 1 // useState() 返回的内容
   // ...
-  ;<p>You clicked {count} times</p>
+  <p>You clicked {count} times</p>
   // ...
 }
 
-// 第二次点击事件之后, 函数被调用
+// 第二次点击事件之后, 函数 (Counter组件) 再次被调用
 function Counter() {
   // highlight-next-line
   const count = 2 // useState() 返回的内容
   // ...
-  ;<p>You clicked {count} times</p>
+  <p>You clicked {count} times</p>
   // ...
 }
 ```
 
-**无论何时, 状态更新之后, React 都会重新调用我们的组件. 每一次渲染的结果都会"看到"组件内部的 `counter` 状态值, 而这个值在函数中实际上是一个固定值.**
+**无论何时, 状态更新之后, React 都会重新调用我们的组件. 每一次渲染的结果都会"看到"组件内部的 `counter` 状态值, 而这个值在函数中实际上是一个*常量*.**
 
-所以说以下这一行的代码并没有任何特殊的数据绑定逻辑:
+所以说以下这一行代码并没有任何特殊的数据绑定逻辑:
 
 ```jsx
 <p>You clicked {count} times</p>
@@ -83,13 +83,15 @@ function Counter() {
 
 **它仅仅只是将数字的值嵌入到渲染结果中而已.** 这个数字是由 React 提供的. 当我们调用 `setCount` 的时候, React 会用一个最新的 `count` 值来重新调用我们的组件. 然后 React 更新 DOM, 以匹配最新的渲染结果.
 
-这里的关键点是: `count` 值在每次渲染的调用中, 都是固定的. 是我们的组件传递了最新的 `count` 值, 每一次渲染, 渲染结果都输出了这个值. 每一次渲染的 `count` 都互不关联.
+这里的关键点是: `count` 值在每次渲染的过程中, 都是一个固定的常量. 只有组件被重新调用, 每一次渲染都"看到了"对应的 `count` 值, 同时每一次渲染的 `count` 都互不关联.
 
 (想要更深入地了解具体的渲染流程, 可以查看这篇文章: [React 作为 UI 运行时](https://overreacted.io/react-as-a-ui-runtime/))
 
 ### 每次渲染都有自己的事件处理器
 
-查看下面的示例. 我们设置了一个 3 秒的定时器, 之后弹出 `count` 值:
+接下来开始看事件处理器.
+
+查看下面的示例. 我们设置了一个 3 秒的定时器, 3 秒之后弹出 `count` 值:
 
 ```jsx
 function Counter() {
@@ -106,23 +108,22 @@ function Counter() {
     <div>
       <p>You clicked {count} times</p>
       <button onClick={() => setCount(count + 1)}>Click me</button>
-      // highlight-start
+      // highlight-next-line
       <button onClick={handleAlertClick}>Show alert</button>
-      // highlight-end
     </div>
   )
 }
 ```
 
-我按顺序做了以下几件事情:
+现在我按步骤做了以下几件事情:
 
 - 将计时器的值**增加**到 3
 - **点击**"Show alert"
-- 在定时器的回调被执行之前将计时器的值**增加**到 5
+- 在定时器的回调(`alert`函数)被执行之前将计时器的值**增加**到 5
 
 ![counter](./counter.gif)
 
-你认为 `alert` 的结果是什么呢? 是 `alert` 时的 state 值 5, 还是点击时的 state 值 3?
+你认为 `alert` 的结果会是什么呢? 是 `alert` 时的 state 值 5, 还是点击时的 state 值 3?
 
 ---
 
@@ -132,17 +133,17 @@ function Counter() {
 
 可以在[这里](https://codesandbox.io/s/w2wxl3yo0l)自己试一试!
 
-如果这个示例对你来说很费解, 可以想象一个更实际的例子: 一个聊天应用, 将 count 类比为当前接受的消息对应的 ID, 存储在局部状态中, 将按钮类比为发送消息的按钮. [这篇文章](https://overreacted.io/how-are-function-components-different-from-classes/)详细解释了出现上述结果的原因, 正确答案是 3.
+如果这个示例对你来说很费解, 可以想象一个更实际的例子: 假设现在有一个聊天应用, 我们将 count 类比为当前接受的消息对应的 ID, 存储在 state 中, 将按钮类比为发送消息的按钮. [这篇文章](https://overreacted.io/how-are-function-components-different-from-classes/)详细解释了出现上述结果的原因, 正确答案是 3.
 
 `alert` 会"捕捉"点击当时 state 的值.
 
-<mark>(There are ways to implement the other behavior too but I’ll be focusing on the default case for now. When building a mental model, it’s important that we distinguish the “path of least resistance” from the opt-in escape hatches.)</mark>
+(*当然, 我们可以修改代码以实现其他的场景, 但是目前我只关注默认场景. 当我们在建立一个全新的心智模型的时候, 选择最简单的方式十分重要, 这样能帮助我们更容易地理解这个概念.*)
 
 ---
 
-但是其中的原理是怎样的呢?
+那么其中的原理是什么呢?
 
-我们先前提到过, `count` 值在每次调用时都是一个固定值. 有必要重点指出的是 -- **我们的函数会被调用多次(每次渲染被调用一次), 每一次被调用时, 这个 count 值都会是由 useState 控制的一个特定值.**
+我们先前提到过, `count` 值在每次被调用时都是一个常量. 有必要重点指出的是 -- **我们的函数(组件)会被调用多次(每次渲染被调用一次), 每一次被调用时, 这个 count 都会是由 useState 控制的一个特定值.**
 
 这种特性并非 React 独有 -- 普通的函数也是这样工作的:
 
@@ -165,9 +166,9 @@ someone = { name: "Dominic" }
 sayHi(someone)
 ```
 
-在这个[示例](https://codesandbox.io/s/mm6ww11lk8)中, 外部的 `someone` 变量被多次重新赋值. (就像在 React 中, 当前组件的 state 不断变化一样. ) **在 `sayHi` 内部, 有一个变量 `name`, 它会读取 `person` 的 `name` 属性.** 这个变量在函数内部, 每次调用之间都是独立的. 因此, 当定时器的回调被调用的时候, 每次 alert 都会"记住"自己的 `name`.
+在这个[示例](https://codesandbox.io/s/mm6ww11lk8)中, 外部的 `someone` 变量被多次重新赋值. (就像在 React 中, 当前组件的 state 不断变化一样. ) **在 `sayHi` 内部, 有一个变量 `name`, 它会读取 `person` 的 `name` 属性.** 这个变量在函数内部, 每次调用之间都是独立的. 因此, 当定时器的回调被调用的时候, 每次 alert 都会"记住"当时的 `name`.
 
-这也解释了为什么我们的事件处理器在点击的当下"捕捉"了 `count` 值. 同样的规则下, 每次渲染都能"看到"自己的 `count`:
+这也解释了我们的事件处理器是如何在点击的当下"捕捉" `count` 值. 同理, 每次渲染都能"看到"自己的 `count`:
 
 ```jsx
 // 首次渲染
@@ -210,7 +211,7 @@ function Counter() {
 }
 ```
 
-每一次渲染, 都会返回各自版本的 `handleAlertClick`, 并且有各自版本的 `count`:
+每一次渲染, 都会返回各自版本的 `handleAlertClick`, 并且有各自的 `count`:
 
 ```jsx
 // 首次渲染
@@ -224,7 +225,7 @@ function Counter() {
   }
   // ...
   // highlight-next-line
-  ;<button onClick={handleAlertClick} /> // 内部值为 0 的版本
+  <button onClick={handleAlertClick} /> // 内部值为 0 的版本
   // ...
 }
 
@@ -239,7 +240,7 @@ function Counter() {
   }
   // ...
   // highlight-next-line
-  ;<button onClick={handleAlertClick} /> // 内部值为 1 的版本
+  <button onClick={handleAlertClick} /> // 内部值为 1 的版本
   // ...
 }
 
@@ -254,22 +255,22 @@ function Counter() {
   }
   // ...
   // highlight-next-line
-  ;<button onClick={handleAlertClick} /> // 内部值为 2 的版本
+  <button onClick={handleAlertClick} /> // 内部值为 2 的版本
   // ...
 }
 ```
 
 这也是为什么, 在这里的[示例](https://codesandbox.io/s/w2wxl3yo0l)中, 事件处理器"属于"各自的渲染, 当用户点击的时候, 会使用那次渲染的 `counter` 值.
 
-**对于每一次渲染, 内部的 props 和 state 始终都是一致的, 并且每次渲染都是独立的.** 既然每次渲染的 props 和 state 各自独立, 消费它们的部分(包括事件处理器), 在渲染间也各自独立, 都从属于特定的渲染. 因此事件处理器内部的异步函数也会"看到"同样的 `count` 值.
+**对于每一次渲染, 内部的 props 和 state 始终保持不变, 并且每次渲染都是独立的.** 既然每次渲染的 props 和 state 各自独立, 消费它们的部分(包括事件处理器), 在渲染间也各自独立, 都从属于特定的渲染. 因此事件处理器内部的异步函数也会"看到"同样的 `count` 值.
 
-_边注: 我在 `handleAlertClick` 中直接使用了 `count` 值. 这样的替换是安全的, 因为在一次渲染流程中, `count` 值不可能有变化. 它被声明为 `const`, 且是一个不可变的数字. 同样的原则在对象中仍然适用, 不过我们必须要确保避免改变(mutate)状态的值. 用一个全新创建的对象去调用 `setSomething(newObj)`, 而不改变这个对象就可以了. 这样的话, 前一次渲染的状态(state)值就能够保持不被下一次渲染修改._
+_边注: 我在 `handleAlertClick` 中直接使用了 `count` 值. 这样的替换是安全的, 因为在一次渲染流程中, `count` 值不可能有变化. 它被声明为 `const`, 且是一个不可变的数字. 同样的原则在对象中仍然适用, 不过我们必须要确保避免改变(mutate)状态的值. 用一个新创建的对象去调用 `setSomething(newObj)`, 而不改变(mutate)这个对象. 这样的话, 前一次渲染的状态(state)值就能够保持不被下一次渲染修改._
 
 ### 每次渲染都有自己的副作用
 
-这篇文章的主要内容本该是副作用(effect)的, 现在我们会开始详细介绍它. 其实, 副作用的和以上两部分是一样的, 每次渲染都有自己的副作用.
+这篇文章的主要内容本该是副作用(effect), 现在我们会开始详细介绍它. 其实, 副作用和以上两部分的行为类似, 每次渲染都有自己的副作用.
 
-现在我们回到 React [文档](https://reactjs.org/docs/hooks-effect.html)中的一个例子:
+现在我们回到 React [文档](https://reactjs.org/docs/hooks-effect.html)中的例子:
 
 ```jsx
 function Counter() {
@@ -289,7 +290,7 @@ function Counter() {
 }
 ```
 
-**我想提出一个问题: effect 是如何读取到 `count` 的最新值的?**
+**现在有一个问题: effect 是如何读取到 `count` 的最新值的?**
 
 在 effect 函数的内部有一些数据绑定或者订阅的逻辑, 使得 effect 函数每次都能读取到 `count` 的最新值? 还是 `count` 是一个可变的值, React 在组件的内部维护了这个值, 因此我们的 effect 函数能够读取到最新值?
 
@@ -297,9 +298,9 @@ function Counter() {
 
 先前我们已经知道, `count` 在每次特定的组件渲染流程中, 都是一个常量. 事件处理器从它所属的渲染流程中读取到了对应的 `count` 值, 因为 `count` 是处于对应作用域的变量. 在 effect 函数中也是这样的!
 
-**并不是在一个"不会变化"的副作用方法中, `count` 变量值时刻变化. 而是每一次渲染, 副作用函数本身都是不一样的.**
+**并不是在一个"不会变化"的副作用方法中, `count` 变量值时刻变化. 而是每一次渲染, 副作用函数本身都不一样.**
 
-同样地, 每个版本的副作用方法读取到的都是当次渲染所传入的 `count` 值:
+同样地, 每个版本的副作用方法读取到的都是当次渲染内的 `count` 值:
 
 ```jsx
 // 首次渲染
@@ -344,6 +345,8 @@ function Counter() {
   // ..
 }
 ```
+
+MARK
 
 React 会记住每一次你所提供的副作用方法, 在当次渲染结束, UI 呈现出对应变化之后调用这个副作用方法.
 
@@ -1540,14 +1543,24 @@ function Article({ id }) {
 
 [这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)详细阐释了你应该如何处理异常情况和加载的状态, 简单描述就是将这部分逻辑提取到一个自定义的 Hook 中. 如果你想要学习更多有关于如何使用 Hook 请求数据的知识的话, 可以阅读这篇文章.
 
-### Rasing the Bar
+### 进阶的理解
 
-在类函数的心智模型下, side effects behave differently from the render output. UI 的渲染由 props 和 state 驱动, 并且会确保渲染结果与它们的变化始终保持一致, 但是副作用就不是这样了. 这也是经常引起 bug 的一种情况.
+在类组件生命周期的心智模型下, side effects behave differently from the render output. UI 的渲染由 props 和 state 的变化驱动, 并且会确保渲染结果与它们的变化始终保持一致, 但是在副作用的心智模型下, 情况就不是这样了. 对两者概念的混淆, 也经常会引起一些 bug.
 
-在 `useEffect` 的心智模型下, 默认情况下所有情况都是同步的. 副作用函数变成了 React 数据流的一部分. 如果你对于每一个 `useEffect` 都正确处理的话, 组件就也能够更好地处理极端情况.
+在 `useEffect` 的心智模型下, 默认情况下所有场景都是同步的. 副作用函数变成了 React 数据流的一部分. 如果开发者对于每一个 `useEffect` 都正确处理的话, 组件也能够更好地处理极端情况.
 
-但是, 处理好 `useEffect` 的成本很大也很繁琐. Writing synchronization code that handles edge cases well is inherently more difficult than firing one-off side effects that aren’t consistent with rendering.
+然而, 处理好 `useEffect` 的成本很大也很繁琐. 编写同步的代码, 处理极端情况, 比处理一次性的副作用难度大上很多.
 
-This could be worrying if useEffect was meant to be the tool you use most of the time. However, it’s a low-level building block. It’s an early time for Hooks so everybody uses low-level ones all the time, especially in tutorials. But in practice, it’s likely the community will start moving to higher-level Hooks as good APIs gain momentum.
+如果我们在日常开发中经常用到 `useEffect` 的话, 情况就会变得很繁琐. 幸运的是, `useEffect` 是一个较为底层的 API. 因为目前尚处于 Hooks 出现的早期阶段, 因此大家会比较经常使用它, 特别是在某些教程中. 随着时间的发展, 社区会出现更多高阶的 Hook API, 这样依赖, `useEffect` 的使用场景就会变少了.
 
-我曾经见过很多应用, 实现了一些自己的 Hooks, 比如 `useFetch`, 封装了应用的验证逻辑, `useTheme`, 利用了 theme 的 context. 一旦我们封装了类似的自定义 Hooks, 就不会经常用到 `useEffect`. 
+目前已经有许多应用,实现了一些自己的 Hooks, 比如 `useFetch`, 除了基本功能之外, 还封装了一些鉴权逻辑, `useTheme`, 则是利用 context 实现了某些功能. 一旦我们封装了类似的自定义 Hooks, 用到 `useEffect` 的场景, 自然也就变少了. 尽管 `useEffect` 上手比较复杂, 但是它的能力也为基于它实现的 Hooks 带来了很多好处.
+
+截止目前, `useEffect` 的大部分使用场景都是请求数据. But data fetching isn’t exactly a synchronization problem. This is especially obvious because our deps are often `[]`. What are we even synchronizing?
+
+从长远角度看, 专门用以请求数据的 [Suspense 特性](https://reactjs.org/blog/2018/11/27/react-16-roadmap.html#react-16x-mid-2019-the-one-with-suspense-for-data-fetching) 使得第三方库 have a first-class way 来告诉 React 延迟渲染的流程, 直到某些异步的流程结束再开始渲染.
+
+随着 Suspense 逐渐覆盖越来越多的数据请求场景, 我猜测 `useEffect` 会逐渐用于其他需要同步 props 和 state 至副作用函数中的场景. `useEffect` 的设计初衷, 也是处理这样的场景, 而并非数据请求. 到那时候, 类似[这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)中的自定义 Hooks, 就会更多地被用于数据请求.
+
+### 总结
+
+我已经向大家介绍了我所了解的关于 `useEffect` 的知识点和使用场景. 现在可以再回看文章最开始的[太长不看](https://overreacted.io/a-complete-guide-to-useeffect/#tldr)部分的内容. 是否对它们有更深入的理解了呢? 

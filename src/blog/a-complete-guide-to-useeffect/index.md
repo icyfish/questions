@@ -346,21 +346,19 @@ function Counter() {
 }
 ```
 
-MARK
+React 会记住每一次你所提供的副作用方法, 在当次渲染流程结束, UI 呈现出对应变化之后, 调用这个副作用方法.
 
-React 会记住每一次你所提供的副作用方法, 在当次渲染结束, UI 呈现出对应变化之后调用这个副作用方法.
-
-尽管这个副作用方法看起来是一样的(功能: 更新文档的标题), 但是实际上每一次渲染这个方法都是不一样的 -- 并且每一个副作用方法都会看到"渲染"当次的 props 和 state.
+尽管每一次渲染的副作用方法看起来没有差别(功能都是更新文档的标题), 但是实际上每一次渲染这个方法都是不一样的 -- 并且每一个副作用方法都会看到"渲染"当次的 props 和 state.
 
 **在概念上, 你可以把副作用方法理解为每次渲染的结果.**
 
-严格来说, 其实它们并不是渲染结果(为了能够通过简单的语法[实现 Hooks 的组合](https://overreacted.io/why-do-hooks-rely-on-call-order/), 减少运行时开销). 但是基于我们目前想要建立的心智模型, 我们可以在概念上认为副作用函数是某一次渲染的结果.
+但是严格来说, 它们并不是渲染结果(为了能够通过简单的语法[实现 Hooks 的组合](https://overreacted.io/why-do-hooks-rely-on-call-order/), 减少运行时的开销). 但是基于我们目前想要建立的心智模型, 可以在概念上认为副作用函数是某一次渲染的结果.
 
 ---
 
 现在来巩固一下以上的内容, 首先回顾首次渲染:
 
-- **React:** 当 state 值为 `0` 的时候, 给我你希望渲染的 UI.
+- **React:** 当 state 值为 `0` 的时候, 给我你希望渲染的 UI 内容.
 - **组件:**
   - 这是我要渲染的内容: `<p>You clicked 0 times</p>`.
   - 渲染结束之后请执行这个副作用方法: `() => { document.title = 'You clicked 0 times' }`.
@@ -378,7 +376,7 @@ React 会记住每一次你所提供的副作用方法, 在当次渲染结束, U
 - **组件:**
   - 这是渲染的结果: `<p>You clicked 1 times</p>`.
   - 记得执行这个副作用方法: `() => { document.title = 'You clicked 1 times' }`.
-- **React:** 好的, 更新 UI. Hey, 浏览器, 我已经修改了 DOM 了.
+- **React:** 好的, 更新 UI. Hey, 浏览器, 我已经修改好 DOM 了.
 - **浏览器:** 好的, 我把它们绘制到屏幕中.
 - **React:** OK, 我现在开始执行副作用方法.
   - 执行 `() => { document.title = 'You clicked 1 times' }`.
@@ -418,13 +416,13 @@ function Counter() {
 
 ---
 
-你可能会认为这是个糊弄你的题目, 最终的结果会很出人意料. 其实并不是! 我们来看这一系列的输出 -- 每一个输出都属于特定的渲染, 因此每一次输出都是自己的 `count` 值. [CodeSandbox 代码示例](https://codesandbox.io/s/lyx20m1ol).
+你可能会认为这是个糊弄你的题目, 最终的结果会很出人意料. 其实并不是! 我们来看这一系列的输出 -- 每一个输出都属于特定的渲染, 因此每一次输出都是自己的 `count` 值. 可以在[这里](https://codesandbox.io/s/lyx20m1ol)自己尝试一下.
 
 ![timeout_counter](./timeout_counter.gif)
 
 你可能会觉得: "当然是这样输出的, 否则会怎样输出呢?"
 
-不过, `this.state` 在类组件中并不是这样工作的. 很多人会把 `useEffect` 看作是和[类中](https://codesandbox.io/s/kkymzwjqz3)的`componentDidUpdate` 类似的方法:
+不过, `this.state` 在类组件中的行为并不是这样. 很多人会把 `useEffect` 看作是和[类组件概念中](https://codesandbox.io/s/kkymzwjqz3) `componentDidUpdate` 的类似方法:
 
 ```jsx
   componentDidUpdate() {
@@ -434,12 +432,12 @@ function Counter() {
   }
 ```
 
-实际上并不是这样的, `this.state.count` 始终是最新的 `count` 值, 但是 `useEffect` 中的则是当次渲染的值, 因此以上代码的结果, 输出的会是 `5`:
+实际上并不是这样, `this.state.count` 始终是最新的 `count` 值, 但是 `useEffect` 中的则是当次渲染的值, 因此以上代码的结果, 输出的会是 `5`:
 
 ![timeout_counter_class](./timeout_counter_class.gif)
 
-我觉得有点讽刺的是, Hooks 的实现十分依赖 JavaScript 中的闭包,
-I think it’s ironic that Hooks rely so much on JavaScript closures, and yet it’s the class implementation that suffers from the canonical wrong-value-in-a-timeout confusion that’s often associated with closures. This is because the actual source of the confusion in this example is the mutation (React mutates this.state in classes to point to the latest state) and not closures themselves.
+<mark>我觉得很有意思的是, Hooks 的实现十分依赖 JavaScript 中的闭包, 
+I think it’s ironic that Hooks rely so much on JavaScript closures, and yet it’s the class implementation that suffers from the canonical wrong-value-in-a-timeout confusion that’s often associated with closures. This is because the actual source of the confusion in this example is the mutation (React mutates this.state in classes to point to the latest state) and not closures themselves.</mark>
 
 **当我们需要锁定一个永远不会变化的值的时候, 使用闭包是最合适的手段. 这使得我们很容易能够推出正确答案, 因为归根结底你正在读取的值始终是一个常量.** 既然我们现在已经知道了如何维持渲染时的 props 和 state, 可以开始尝试[使用闭包](https://codesandbox.io/s/w7vjo07055)对 class 版本的代码进行改造.
 
@@ -475,11 +473,13 @@ function Example(props) {
 }
 ```
 
-**从上面的代码可以看出, 不管是不是在组件中提前读取 state 或者 props 的值, 对副作用函数中读取到的结果其实都没有影响.** 在单次渲染的作用域内, props 和 state 始终会保持不变. (将 props 解构能够使得这个概念更容易理解.)
+**从上面的代码可以看出, 不管是不是在组件中提前读取 state 或者 props 的值, 对副作用函数中读取到的结果都没有影响.** 在单次渲染的作用域内, props 和 state 始终会保持不变. (将 props 解构能够使得这个行为更容易理解.)
 
-在某些场景下, 我们可能会希望能够副作用函数的回调中读取到最新的值而不是渲染当时的值. 最简单的方式是使用 `ref`, 在这篇[文章](https://overreacted.io/how-are-function-components-different-from-classes/)的最后一部分我们有提及到相关的概念.
+在某些场景下, 我们可能会希望能够副作用函数的回调中读取到最新的值而不是渲染当时的值. 最简单的方式是使用 `ref`, 在这篇[文章](https://overreacted.io/how-are-function-components-different-from-classes/)的最后一部分我们有提及到这一点.
 
-有一点需要注意的是, 当我们希望在过去的渲染中读取到未来的 props 和 state 时, 我们实际上在逆流前进. 这当然没有错(在某些情况下甚至是必要的), 不过这样的做法看起来比较"不干净", 违反了现有的模式. 其实 React 团队是刻意把函数式组件的行为设计成这样的, 如此依赖, 用户就能够很显而易见地发现代码的缺陷. 在类式组件中, 发现这类问题就比较困难.
+MARK
+
+有一点需要注意的是, 当我们希望在过去的渲染中读取到未来的 props 和 state 时, 实际上在逆流前进. 这当然没有错(在某些情况下甚至是必要的), 不过这样的做法看起来比较"不干净", 违反了现有的模式. 其实 React 团队是刻意把函数式组件的行为设计成这样的, 如此依赖, 用户就能够很显而易见地发现代码的缺陷. 在类式组件中, 发现这类问题就比较困难.
 
 这里有[另一个版本计时器的例子](https://codesandbox.io/s/rm7z22qnlp), 模拟了类式组件的行为:
 

@@ -620,17 +620,15 @@ function Greeting({ name }) {
 }
 ```
 
-MARK
+这样的心智模型和我们所熟悉的 _挂载/更新/卸载_ 有一点区别. 了解这个模型很重要. **如果你实现的副作用函数, 会根据是第一次渲染, 还是后续的渲染, 有不同的行为, 那么就和我们的设计理念背道而驰了!** 如果我们的结果依赖的是"过程"而非"目的地", 同步的过程就会失败.
 
-这样的心智模型和我们所熟悉的 _挂载/更新/卸载_ 有一点区别. 了解这个模型很重要. **如果你希望实现的副作用函数, 会根据是第一次渲染, 还是重新渲染, 有不同的表现形式, 那么你就是在逆流前进!** 如果我们的结果依赖的是"过程"而非"目的地", 同步的过程就会失败.
+不管我们是按照属性(A, B, C)的顺序进行渲染, 还是直接用属性 C 进行渲染, 其实基本上没有什么差别. 即使存在差别, 也只是暂时性的(比如我们在请求数据的时候, 会有一些细微的差别), 但是最终的结果始终是一致的.
 
-不管我们是按照属性(A, B, C)的顺序进行渲染, 还是直接用 C 进行渲染, 其实基本上没有什么差别. 唯一的差别可能是在请求数据的过程中存在的. 但是最终的结果始终是相同的.
+有一个毋庸置疑的点是: 每一次渲染都执行所有的副作用其实很影响效率. (在某些情况下, 甚至会导致无限循环.)
 
-有一个毋庸置疑的点是: 每一次渲染都执行所有的副作用其实很影响效率. (同时在某些情况下, 会导致无限循环.)
+那么我们怎么修复这个问题呢?
 
-那么我们怎么修复它呢?
-
-### 告诉 React 副作用函数何时会产生变化
+### 告诉 React 如何区别副作用函数的变化
 
 我们已经学习了 React 如何 diff DOM. React 并没有在每次渲染的时候更新所有的 DOM, 而是更新有修改的部分.
 
@@ -653,16 +651,16 @@ const oldProps = { className: "Greeting", children: "Hello, Dan" }
 const newProps = { className: "Greeting", children: "Hello, Yuzhi" }
 ```
 
-React 会查看每一个 props, 然后判断出 `children` 有变化, 再更新 DOM, `className` 没有变化, 因此不需要更新. 所以 React 只需要这样处理即可:
+React 会检查每一个 props, 然后判断出 `children` 有变化, 会去更新 DOM, `className` 没有变化, 因此不需要更新. 所以 React 只需要这样处理即可:
 
 ```jsx
 domNode.innerText = "Hello, Yuzhi"
-// No need to touch domNode.className
+// 不需要处理 domNode.className
 ```
 
 **那么针对副作用函数, 是否也能够只在必要的时候更新呢?**
 
-举个例子, 在以下函数中, 组件会因为 state 的更新而更新:
+举个例子, 在以下函数中, 组件会因为 state 的更新而重新渲染:
 
 ```jsx
 function Greeting({ name }) {
@@ -675,9 +673,8 @@ function Greeting({ name }) {
   return (
     <h1 className="Greeting">
       Hello, {name}
-      // highlight-start
+      // highlight-next-line
       <button onClick={() => setCounter(count + 1)}>Increment</button>
-      // highlight-end
     </h1>
   )
 }
@@ -685,7 +682,7 @@ function Greeting({ name }) {
 
 但是我们的副作用函数并没有用到 `counter` 的值. **副作用函数只会根据 `name` 的属性值更新 `document.title`, 但是 `name` 属性值始终是一致的.** 在每次 `counter` 值变化的时候给 `document.title` 重新赋值是完全没有必要的.
 
-那么 React 如何分辨副作用函数的更新与否呢?
+那么 React 如何分辨副作用函数是否需要变化呢?
 
 ```jsx
 let oldEffect = () => {
@@ -697,9 +694,9 @@ let newEffect = () => {
 // React 能够看出这两个函数做了同样的事情吗?
 ```
 
-并不能, React 在调用函数之前, 是无法分析出这个函数所做的事情的. <mark>(The source doesn’t really contain specific values, it just closes over the name prop.)</mark>
+并不能, React 在调用函数之前, 是无法分析出这个函数所做的事情的. 源代码和上述例子的区别就是, 源代码并不包含具体值, 而只是一个 `name` 属性.
 
-因此, 我们需要找到方法避免在不必要的情况下执行副作用函数, 我们可以传入一个依赖数组参数到 `useEffect` 方法中, 只有当依赖数组中的值变化的时候, 副作用函数才会重新执行.
+因此, 我们需要找到方法避免在不必要的情况下执行副作用函数, 可以传入一个依赖数组参数到 `useEffect` 方法中, 只有当依赖数组中的值变化的时候, 副作用函数才会重新执行.
 
 ```jsx
 useEffect(() => {
@@ -708,7 +705,7 @@ useEffect(() => {
 }, [name]) // 依赖数组参数
 ```
 
-**以上的场景就好像是我们在告诉 React: "Hey React, 我知道你不能看到函数内部的内容, 但是我可以确保函数内部使用的渲染相关参数只有 `name`. "**
+**以上的场景就好像是我们在告诉 React: "Hey React, 我知道你不能看到函数内部的内容, 但是我可以确保函数内部使用到的渲染相关的参数只有 `name`. "**
 
 如果前一次副作用函数执行时 `name` 的值与这一次执行时一致的话, 那么就可以跳过此次副作用函数的执行:
 
@@ -723,15 +720,15 @@ const newEffect = () => {
 }
 const newDeps = ["Dan"]
 
-// React 无法看到韩式内部的情况, 但是它可以对比这些依赖参数
-// 由于依赖参数的值始终前后是一致的, 那么就不需要执行新的副作用函数
+// React 无法看到函数内部的情况, 但是它可以对比这些依赖参数
+// 由于依赖参数的值前后始终一致, 就不需要执行新的副作用函数
 ```
 
 如果依赖数组中的某个值在渲染前后有所差异, 那么这个副作用函数就必须执行. 同步所有这些值.
 
-### 要确保依赖数组中的参数的准确性 不要欺骗 React
+### 要确保依赖数组中参数的准确性 不要欺骗 React
 
-欺骗 React 关于依赖数组值的内容会带来比较不好的影响. <mark>Intuitively, this makes sense, but I’ve seen pretty much everyone who tries useEffect with a mental model from classes try to cheat the rules. (And I did that too at first!)</mark>
+欺骗 React 关于依赖数组中的内容会带来比较不好的后果. <mark>Intuitively, this makes sense, but I’ve seen pretty much everyone who tries useEffect with a mental model from classes try to cheat the rules. (And I did that too at first!)</mark>
 
 ```jsx
 function SearchResults() {
@@ -747,11 +744,11 @@ function SearchResults() {
 }
 ```
 
-(关于 [Hooks 的常见问题](https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies)中, 已经详细说明了针对这个问题的正确做法. 我们回到现在例子:)
+_(关于 [Hooks 的常见问题](https://reactjs.org/docs/hooks-faq.html#is-it-safe-to-omit-functions-from-the-list-of-dependencies)中, 已经详细说明了更合适的做法. 我们回到现在的例子:)_
 
-"但是我只希望在组件挂载的时候执行这个方法!" 你或许会这样说. 我们要记住这样一个原则: 如果你声明了依赖参数, **所有组件内部的值, 只要被副作用函数使用, 就一定要声明在依赖参数中.** 包括 props, state, 函数等任何在组件内部使用的值.
+你或许会这样说: "但是我只希望在组件挂载的时候执行这个方法!". 我们要记住这样一个原则: 如果你声明了依赖参数, **所有组件内部的值, 只要被副作用函数使用, 就一定要声明在依赖参数中.** 包括 props, state, 函数等任何在组件内部使用的值.
 
-但是有时候我们可能会遇到一些问题. 比如, 你可能会遇到无限循环请求的情况, 或者是某个 socket 不断被重新创建. **针对这些问题的处理方式并不是删除这个依赖.** 后面我们会谈到如何解决这些问题.
+但是有时候我们可能会遇到一些问题. 比如, 可能会遇到循环请求的情况, 或者是某个 socket 不断被重新创建. **针对这些问题的处理方式并不是删除这个依赖.** 后面我们会谈到如何解决这些问题.
 
 在我们查看解决方案之前, 先更深入地了解一下我们的问题.
 
@@ -768,9 +765,9 @@ useEffect(() => {
 
 ![](./deps-compare-correct.gif)
 
-(依赖数组中的值在渲染前后有所差异, 因此我们需要重新执行副作用函数.)
+_(依赖数组中的值在渲染前后有所差异, 因此我们需要重新执行副作用函数.)_
 
-如果我们在依赖数组中传入空数组`[]`, 新的副作用函数就不会被执行:
+如果我们在依赖数组中传入空数组`[]`, 新的副作用函数就不会被重新执行:
 
 ```jsx
 useEffect(() => {
@@ -781,11 +778,11 @@ useEffect(() => {
 
 ![](./deps-compare-wrong.gif)
 
-(依赖数组前后一致, 因此跳过这次副作用函数的执行)
+_(依赖数组前后一致, 因此跳过这次副作用函数的执行)_
 
 通过以上的场景对比, 问题就很明显地体现出来了. <mark>But the intuition can fool you in other cases where a class solution “jumps out” from your memory.</mark>
 
-举个例子, 比如我们想要实现一个计数器, 每隔一秒数字加 1. 如果是类式组件的话, 我们会这样实现它: 在组件挂载的时候设置计时器函数, 组件卸载的时候清楚.
+举个例子, 比如我们想要实现一个计数器, 每隔一秒数字加 1. 如果是类式组件的话, 我们会这样实现它: 在组件挂载的时候设置计时器函数, 组件卸载的时候清除.
 
 这是具体的[代码示例](https://codesandbox.io/s/n5mjzjy9kl). 当我们想要把类式组件转换成函数式组件的时候, 会习惯性地使用 `useEffect`, 设置依赖参数为 `[]`, 表示希望副作用函数只执行一次.
 
@@ -809,7 +806,7 @@ function Counter() {
 
 如果你的心智模型是这样的: "依赖的作用是让我声明什么时候需要重新触发副作用函数的执行", 那么你写出来的代码就会很危险, 就像上面的例子一样. 但是问题是, 你希望只触发一次副作用方法, 因为这是一个间隔执行的 API, 实际上并没有错, 但是为什么会带来问题呢?
 
-之前已经提到过, 副作用函数中使用到的*所有*值, 我们都要在依赖参数数组中声明. 由于内部使用到了 `count`, 但是我们并没有在依赖参数数组中声明, 因此会引起 bug.
+之前已经提到过, 副作用函数中使用到的*所有*值, 我们都要在依赖参数数组中声明. 由于内部使用到了 `count`, 但是我们并没有在依赖参数数组中声明, 引起 bug 只是时间的问题.
 
 在首次渲染的时候, `count` 的值是 `0`. `setCount(count + 1)` 在首次渲染时实际执行的是 `setCount(0 + 1)`. **但是因为我们声明的依赖数组参数中数组值为 `[]`, 因此副作用函数不会变化, 每隔一秒执行的函数都是 `setCount(0 + 1)`**:
 
@@ -866,7 +863,7 @@ const count = useEffect(() => {
 }, [])
 ```
 
-因此, 将依赖参数设置为 `[]` 会引起 bug. React 会比较依赖项数组中的内容, 然后跳过副作用函数的更新:
+因此, 将依赖参数设置为 `[]` 会引起 bug. React 会对比依赖项数组中的内容, 然后跳过副作用函数的更新:
 
 ![](./interval-wrong.gif)
 
@@ -874,16 +871,124 @@ _(依赖项中的内容始终没有区别, 因此跳过副作用函数的更新)
 
 这样的问题比较难定位. 因此, 我建议大家在传递依赖项参数的时候对 React 保持诚实, 声明所有依赖参数. (我们提供了一个 [lint 规则插件](https://github.com/facebook/react/issues/14920) 以供用户在开发阶段使用.)
 
-### Two Ways to Be Honest About Dependencies
+### 两种对依赖项保持诚实的方式
 
-1. 在依赖项数组中声明副作用函数中的所有依赖项
-2. 用函数的方式更新状态
+对依赖项保持诚实的实践方式有两种, 我们优先使用第一种方式, 在必要情况下使用第二种方式.
 
-### Functional Updates and Google Docs
+**第一种方式是在依赖项数组中声明副作用函数的所有依赖项**, 针对以上的代码, 我们加上 `count` 作为依赖项: query
 
-- 协作编辑
-- `useState` 功能限制
+```jsx
+useEffect(() => {
+  const id = setInterval(() => {
+    // highlight-next-line
+    setCount(count + 1);
+  }, 1000);
+  return () => clearInterval(id);
+    // highlight-next-line
+}, [count]);
+```
 
+这样一来, 依赖项数组的声明就是正确的. 或许这并不是 _理想_ 的解决方案, 但是至少解决了问题. 现在只要 `count` 发生变化, 副作用函数就会重新执行, 副作用函数中读取 `count` 值的部分(`setCount(count + 1)`)也会对应地发生变化:
+
+```jsx
+// 首次渲染, state 值为 0
+function Counter() {
+  // ...
+  useEffect(
+    // 首次渲染的副作用函数
+    () => {
+      const id = setInterval(() => {
+        // highlight-next-line
+        setCount(0 + 1); // setCount(count + 1)
+      }, 1000);
+      return () => clearInterval(id);
+    },
+    // highlight-next-line
+    [0] // [count]
+  );
+  // ...
+}
+
+// 第二次渲染, state 值为 1
+function Counter() {
+  // ...
+  useEffect(
+    // 第二次渲染时的副作用函数
+    () => {
+      const id = setInterval(() => {
+        // highlight-next-line
+        setCount(1 + 1); // setCount(count + 1)
+      }, 1000);
+      return () => clearInterval(id);
+    },
+    // highlight-next-line
+    [1] // [count]
+  );
+  // ...
+}
+```
+
+这样修改之后, [问题解决了](https://codesandbox.io/s/0x0mnlyq8l), 但是只要 `count` 一发生变化, 我们的间隔函数会不断被销毁重建. 这并不是我们所预期的行为:
+
+
+![](./interval-rightish.gif)
+
+
+_(依赖项变化了, 因此我么重新执行副作用函数.)_
+
+---
+
+**第二个策略是改变副作用函数本身, 使得它不依赖外部经常会变化的值.** 我们不想要欺骗 React 关于依赖项的内容, 于是尽可能得减少依赖项的内容.
+
+现在我们开始看看减少依赖项的常用方法.
+
+---
+
+### 用函数的方式更新状态
+
+现在我们的诉求是将 `count` 依赖从副作用方法的依赖中移除.
+
+```jsx
+  useEffect(() => {
+    const id = setInterval(() => {
+      // highlight-next-line
+      setCount(count + 1);
+    }, 1000);
+    return () => clearInterval(id);
+     // highlight-next-line
+  }, [count]);
+```
+
+为了达到我们的目的, 首先思考一个问题, **`count` 的作用是什么呢?** 看起来只有在 `setCount` 函数中才会用到这个它. 这样分析下来发现, 我们的副作用函数内其实根本就不需要 `count`. 当我们需要基于前一个状态更新当前状态的时候, 可以用 `setState` 的[函数形式](https://reactjs.org/docs/hooks-reference.html#functional-updates)更新状态.
+
+```jsx
+  useEffect(() => {
+    const id = setInterval(() => {
+      // highlight-next-line
+      setCount(c => c + 1);
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+```
+
+我倾向于将这些情况看作是"错误的依赖". 如果我们的副作用函数的内容是 `setCount(count + 1)`, 那么 `count` 就是一个必要的依赖项. 再仔细观察可以看到, 我们其实只需要 `count` 的值用来计算 `count + 1`, 然后将计算得出的值抛给 React. 不过, React 其实早已知道当前的 `count` 值. **那么我们只需要告诉 React , 如何更新(+1) `count` 值, 就可以了, 不管当前的 count 值是多少, React 都能够正确计算最终的结果.**
+
+其实, `setCount(c => c + 1)` 做的就是这件事情. 你可以认为它传递了一个指令给 React, 告诉 React 应该如何更新状态的值. 这种更新状态的形式在一些其他场景下同样能够发挥很大的用处, 比如当我们需要[合并状态的更新](https://overreacted.io/react-as-a-ui-runtime/#batching)的时候.
+
+**注意, 此时我们将依赖从依赖数组中删除, 是真正不需要这个依赖了, 并没有欺骗 React, 我们的副作用函数不再需要读取 `counter` 的值了.**
+
+![](./interval-right.gif)
+
+_(依赖项前后一直, 因此我们跳过副作用方法的执行)_
+
+可以在这里[试一试](https://codesandbox.io/s/q3181xz1pj).
+
+尽管副作用函数只执行了一次, 属于第一次渲染 interval 回调函数依然在每次回调执行的时候, 完美地将 `c => c + 1` 的更新指令传达给了 React . 副作用函数不再依赖当前的 `counter` 值, 因为 React 已经知道它了.
+### 函数式更新与 Google Docs
+
+还记得我们提到的, 副作用的心智模型与同步有关吗? 关于同步很有意思的一点是, <mark>is that you often want to keep the “messages” between the systems untangled from their state. </mark> 举个例子, 在 Google Docs 编辑一份文档并没有将整个页面内容传给服务器. 这样的话将会十分低效. 取而代之的是,  Instead, it sends a representation of what the user tried to do.
+
+MARK
 ### 将更新从 actions 中解耦
 
 现在修改以上的示例, 改为存在两个状态相关的变量: `count` 和 `step`. 我们的间隔执行函数不是每秒加 1, 而是每秒加上 `step` 变量所指的值:

@@ -986,9 +986,13 @@ _(依赖项前后一直, 因此我们跳过副作用方法的执行)_
 尽管副作用函数只执行了一次, 属于第一次渲染 interval 回调函数依然在每次回调执行的时候, 完美地将 `c => c + 1` 的更新指令传达给了 React . 副作用函数不再依赖当前的 `counter` 值, 因为 React 已经知道它了.
 ### 函数式更新与 Google Docs
 
-还记得我们提到的, 副作用的心智模型与同步有关吗? 关于同步很有意思的一点是, <mark>is that you often want to keep the “messages” between the systems untangled from their state. </mark> 举个例子, 在 Google Docs 编辑一份文档并没有将整个页面内容传给服务器. 这样的话将会十分低效. 取而代之的是,  Instead, it sends a representation of what the user tried to do.
+还记得我们提到的, 副作用的心智模型与同步有关吗? 关于同步很有意思的一点是, <mark>is that you often want to keep the “messages” between the systems untangled from their state. </mark> 举个例子, 当我们在 Google Docs 上编辑一份文档时, 并没有将整个页面内容传给服务器, 因为这样将会十分低效. Instead, it sends a representation of what the user tried to do.
+
+当然我们的场景和 Google Docs 并不完全相同, 不过 effect 的概念还是同样适用的. **It helps to send only the minimal necessary information from inside the effects into a component.** 更新状态的函数的形式 `setCount(c => c + 1)` 比起 `setCount(count + 1)` 承载了更少的信息. 因为 `setCount` 依赖于当前 `count` 的值. <mark>Thinking in React involves finding the minimal state. This is the same principle, but for updates.</mark>
 
 MARK
+
+对 _意图_ (而不是结果)进行编码, 与 Google Docs [解决协同编辑](https://medium.com/@srijancse/how-real-time-collaborative-editing-work-operational-transformation-ac4902d75682)的方案很相似. While this is stretching the analogy, functional updates serve a similar role in React. 
 ### 将更新从 actions 中解耦
 
 现在修改以上的示例, 改为存在两个状态相关的变量: `count` 和 `step`. 我们的间隔执行函数不是每秒加 1, 而是每秒加上 `step` 变量所指的值:

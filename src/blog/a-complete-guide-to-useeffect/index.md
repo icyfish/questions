@@ -990,10 +990,11 @@ _(依赖项前后一直, 因此我们跳过副作用方法的执行)_
 
 当然我们的场景和 Google Docs 并不完全相同, 不过 effect 的概念还是同样适用的. **It helps to send only the minimal necessary information from inside the effects into a component.** 更新状态的函数的形式 `setCount(c => c + 1)` 比起 `setCount(count + 1)` 承载了更少的信息. 因为 `setCount` 依赖于当前 `count` 的值. <mark>Thinking in React involves finding the minimal state. This is the same principle, but for updates.</mark>
 
-MARK
+对 _意图_ (而不是结果)进行编码, 与 Google Docs [解决协同编辑](https://medium.com/@srijancse/how-real-time-collaborative-editing-work-operational-transformation-ac4902d75682)的方案很相似. While this is stretching the analogy, functional updates serve a similar role in React. 这样的方式确保了, 即使更新来自与多个来源(事件处理器, 副作用函数订阅等), 也能够在一次批量操作中正确地执行, 并且能够预测更新的结果.
 
-对 _意图_ (而不是结果)进行编码, 与 Google Docs [解决协同编辑](https://medium.com/@srijancse/how-real-time-collaborative-editing-work-operational-transformation-ac4902d75682)的方案很相似. While this is stretching the analogy, functional updates serve a similar role in React. 
-### 将更新从 actions 中解耦
+**不过, `setCount(c => c + 1)` 的更新方式并不是特别出色.** 因为这种形式看起来有点奇怪, 并且在某种程度上限制了我们的能力. 比如说, 当我们有两个状态变量, 且两者互相依赖, 或者是我们需要通过属性计算下一次渲染的状态值时, 就没办法使用函数式的更新方式. 不过幸运的是, 我们还有 `useReducer`, 它的更新模式与函数式的更新方式类似, 但是功能更加强大.
+
+### 将状态更新从 actions 中解耦
 
 现在修改以上的示例, 改为存在两个状态相关的变量: `count` 和 `step`. 我们的间隔执行函数不是每秒加 1, 而是每秒加上 `step` 变量所指的值:
 
@@ -1024,13 +1025,13 @@ function Counter() {
 
 此刻我们**并没有欺骗** React. 因为在副作用函数中使用了 `step` , 我们在依赖参数中也加上了它, 因此函数执行的结果始终是准确的.
 
-当前的行为是这样的, 一旦 `step` 的值发生变化, 就会重新开始执行这个间隔函数, 因为 `step` 存在于依赖数组中. 大多数情况下, 这就是我们期待的结果: 销毁副作用函数并创建一个全新的副作用函数. 这是一个比较合理的模式, <mark>and we shouldn’t avoid that unless we have a good reason.</mark>
+对于上述的例子, 可以这样描述它的行为, 一旦 `step` 的值发生变化, 就会重新开始执行这个间隔 (interval) 函数, 因为 `step` 存在于依赖参数数组中. 大多数情况下, 这就是我们期待的结果: 销毁副作用函数并创建一个全新的副作用函数. 这是一个比较合理的模式, 正常情况下, 这也是我们无法避免的模式.
 
-如果我们期待的情况是, `step` 变化不会引起副作用函数的销毁和重新创建. 应该怎样把 `step` 从副作用函数的依赖数组中删除呢?
+不过, 如果我们期待的结果是这样的, 可能就没办法采取以上的模式了: `step` 变化不会引起副作用函数的销毁和重新创建. 应该怎样把 `step` 从副作用函数的依赖数组中删除呢?
 
-**当我们遇到这样的场景, state 中的某个值依赖 state 中的另一个值, 可以考虑使用 `useReducer` 来实现达到更新状态的目的.**
+**当我们遇到这样的场景, state 中的某个值依赖 state 中的另一个值, 可以考虑使用 `useReducer` 来达到更新状态的目的.**
 
-当你发现你写的设置状态相关的代码变成如下这样的时候: `setSomething(something => ...)`, 就可以开始考虑使用 reducer 了. reducer 能够帮助我们: **decouple expressing the “actions” that happened in your component from how the state updates in response to them.**
+当你发现你写的设置状态相关的代码变成如下这样的时候: `setSomething(something => ...)`, 就可以开始考虑使用 reducer 了. reducer 能够帮助我们: <mark>decouple expressing the “actions” that happened in your component from how the state updates in response to them.</mark>
 
 现在用 `dispatch` 依赖来替换代码中的 `step` 依赖:
 
@@ -1051,13 +1052,13 @@ useEffect(() => {
 
 (这里是[代码示例](https://codesandbox.io/s/xzr480k0np))
 
-你或许会疑惑: "这样的方式为什么更好呢?" 因为 **React 会确保 `dispatch` 函数在组件被创建之后, 函数本身始终不会变化. 因此在以上的示例中, 不需要再重新订阅 interval 函数.**
+你或许会疑惑: "这样的方式为什么更好呢?" 因为 **React 会确保 `dispatch` 函数在组件被创建之后, 在组件的生命周期间, 始终是一个常量. 因此在以上的示例中, 不需要再重新订阅 interval 函数.**
 
 至此, 已经解决了我们的问题!
 
-_(你或许会在依赖数组中省去 `dispatch`, `setState`, 或者 `useRef` 这些函数, 因为它们始终不会变化, 不过其实将它们写入依赖项数组是更好的实践.)_
+_(你或许会在依赖数组中省去 `dispatch`, `setState`, 或者 `useRef` 这些函数, 因为它们始终不会变化, 确实是这样. 是否将它们写入依赖数组中都无所谓.)_
 
-`dispatch` 函数做的事情, 并不是读取副作用函数内部的 state, 而是分发一个 action, 描述所发生的事情. 这样的方式使得副作用函数能够和 `step` 状态解耦. 我们的副作用函数其实并不在意我们如何更新状态. 它只是单纯地告诉我们发生了什么. reducer 函数, 则只关注产生怎样的变化的逻辑:
+`dispatch` 函数做的事情, 并不是读取副作用函数内部的 state, 而是分发一个 action, 描述*发生了什么*. 这样的方式使得副作用函数能够和 `step` 状态解耦. 我们的副作用函数其实并不在意我们如何更新状态. 它只是单纯地告诉我们*发生了什么*. reducer 函数, 则只关注状态更新的逻辑:
 
 ```jsx
 const initialState = {
@@ -1083,9 +1084,9 @@ function reducer(state, action) {
 
 ### 为什么 useReducer 是 Hooks 的欺骗模式
 
-我们已经知道, 当副作用函数中状态的更新依赖前一次渲染时的状态值, 或者另一个状态值的时候, 应该怎样删除函数依赖项. **那么当我们依赖属性 props 的时候, 应该怎么处理呢?** 举个例子, 当我们的 API 是 `<Counter step={1}>`. 此时, 我们是否必须要在依赖数组中声明 `props.step` 呢?
+我们已经知道, 当副作用函数中状态的更新依赖前一次渲染时的状态值, 或者另一个状态值的时候, 应该通过什么方式移除函数的依赖项. **那么当我们依赖属性 *props* 的时候, 应该怎么处理呢?** 举个例子, 当我们的 API 是 `<Counter step={1}>`. 此时, 我们是否必须要在依赖数组中声明 `props.step` 呢?
 
-有不必声明的方法! 可以将 reducer 函数本身置于我们的组件内部, 这样 reducer 就能够直接读取对应的 props:
+有不必声明的方法! 可以将 reducer 函数*本身*置于我们的组件内部, 这样 reducer 就能够直接读取对应的 props:
 
 ```jsx
 // highlight-next-line
@@ -1114,9 +1115,9 @@ function Counter({ step }) {
 
 不过这种模式有个问题, 采取这种模式之后, 我们就无法进行一些必要的优化. 比较好的一点是, 在必要情况下, reducer 函数中能够任意读取所需的 props. (这里是[代码示例](https://codesandbox.io/s/7ypm405o8q).)
 
-**此时, 我们的 `dispatch` 函数依然能够保证始终保持不变.** 因此在依赖项数组中忽略这个函数是完全合理的, 它不会引起副作用函数的重新执行.
+**即使是在这样的情况下, 我们的 `dispatch` 函数依然能够保证在组件多次渲染的过程中始终保持不变.** 因此在依赖项数组中忽略这个函数是完全合理的, 它不会引起副作用函数的重新执行.
 
-你或许会对这种模式的底层实现感到好奇. How can the reducer “know” props when called from inside an effect that belongs to another render? The answer is that when you `dispatch`, React just remembers the action — but it will call your reducer during the next render. At that point the fresh props will be in scope, and you won’t be inside an effect.
+你或许会对这种模式的底层原理感到好奇. How can the reducer “know” props when called from inside an effect that belongs to another render? 这是因为当你调用 `dispatch` 的时候, React 会记住这个 action, 然后在下一次渲染的时候 _调用_ reducer. 此时, 最新的 props 就处于渲染的作用域中了, and you won’t be inside an effect. 
 
 **这也是我倾向于将 `useReducer` 看作 Hooks 的"欺骗模式"的原因. 使用 `useReducer`, 我们能够将状态更新的逻辑和描述发生了什么的逻辑进行解耦. 同时帮助我们在依赖项数组中删除不必要的依赖, 避免不必要的副作用重新创建逻辑, 优化应用的性能.**
 
@@ -1138,14 +1139,14 @@ function SearchResults() {
   useEffect(() => {
     fetchData();
     // highlight-next-line
-  }, []); // Is this okay?
+  }, []); // 这样是可以的吗
 
   // ...
 ```
 
 ([代码示例](https://codesandbox.io/s/8j4ykjyv0) 来自于 _Robin Wieruch_ 的[文章](https://www.robinwieruch.de/react-hooks-fetch-data))
 
-代码实际上是有作用的. **但是问题是, 简单地省略内部函数依赖, 当应用规模变大之后, 我们会难以辨别是否覆盖了所有情况!**
+代码实际上是有作用的. **但问题是, 简单地省略内部函数依赖, 当组件的规模变大之后, 我们会难以辨别是否覆盖了所有情况!**
 
 假设我们的代码变成如下这样, 每一个函数变为原来的五倍规模:
 
@@ -1196,7 +1197,7 @@ function SearchResults() {
 }
 ```
 
-<mark>If we forget to update the deps of any effects that call these functions (possibly, through other functions!), our effects will fail to synchronize changes from our props and state. This doesn’t sound great.</mark>
+如果我们忘了更新数组的依赖项, 遗漏了某些方法的话, 副作用函数就很可能无法正确同步 props 和 state 中的某些值. 引起一些 bug.
 
 不过幸运的是, 有个简单的解决办法. **如果我们只在副作用函数内使用到相关的函数, 可以直接将函数移到副作用函数内部:**
 
@@ -1225,7 +1226,7 @@ function SearchResults() {
 
 这样的方式有什么好处呢? 我们不再需要思考 <mark> “transitive dependencies” </mark>. 依赖参数数组也不会再欺骗 React: **因为我们没有使用任何副作用函数外部的值.**
 
-如果后续需要更新 `getFetchUrl` 方法, 使用 `state` 中的 `query` 值, 就会注意到我们正在编辑副作用函数内部的内容, 而这部分内容依赖一个外部的值 -- 因此我们需要在依赖参数中添加 `query`:
+如果后续更新了 `getFetchUrl` 方法, 使用 `state` 中的 `query` 值, 就会注意到我们正在编辑副作用函数*内部*的内容, 而这部分内容依赖一个外部的值 -- 因此我们需要在依赖参数中添加 `query`:
 
 ```jsx
 function SearchResults() {
@@ -1254,17 +1255,15 @@ function SearchResults() {
 
 添加这项依赖的行为, 并不是单纯安抚 React 而已, 这样修改之后, 当 `query` 变化的情况下, 应用就会重新请求数据. **`useEffect` 的设计强制要求开发者关注应用中数据流的变化情况, 并据此选择我们的副作用函数应该如何根据变化做出对应的同步, 而不是忽略数据流的变化, 等到用户发现 bug 之后才开始关注对应的逻辑.**
 
-开发者在开发过程中可以使用 `eslint-plugin-react-hooks` 插件, 并开启对应的代码规范提示规则: `exhaustive-deps`, 这个插件会[分析代码中的副作用函数](https://github.com/facebook/react/issues/14920), 如果副作用函数的实现存在缺陷, 插件就会抛出对应的提示. 换句话说, 这个工具会在我们的组件没有正确处理数据流的情况下, 给我们提示.
+开发者在开发过程中可以使用 `eslint-plugin-react-hooks` 插件, 并开启对应的代码规范提示规则: `exhaustive-deps`, 这个插件会[分析代码中的副作用函数](https://github.com/facebook/react/issues/14920), 如果副作用函数的实现存在缺陷, 插件就会抛出对应的提示. 换句话说, 这个工具会在我们的组件没有正确处理数据流的情况下, 给我们提示. 十分贴心.
 
 ![](./exhaustive-deps.gif)
 
-很贴心.
+### 无法将函数移入副作用内部的情况
 
-### 无法将函数移入副作用内部
+在某些情况下, 我们可能不希望将函数移动到副作用函数*内部*. 比如说, 在多个副作用函数中都用到了同一个方法, 此时我们不希望拷贝粘贴一些重复的逻辑. 又或者, 这个函数是通过 props 传下来的.
 
-在某些情况下, 我们可能不希望将函数移动到副作用函数内部. 比如说, 在多个副作用函数中都用到了同一个方法, 此时我们不希望拷贝粘贴一些重复的逻辑. 又或者, 这个函数是通过 props 传下来的.
-
-这时我们要在依赖参数数组中忽略这个函数吗? 当然不. 再重申一次, **副作用函数对于依赖项的声明, 一定要保持诚实.** 我们总是能够找到更好的解决方案的. 一个普遍存在的误解是: "函数是始终不会变化的". 但是这篇文章阅读下来之后我们会发现, 事实并不是这样. 真实情况是, 定义在组件内部的函数在每一次渲染过程中都会有变化.
+这时我们要在依赖参数数组中忽略这个函数吗? 当然不. 再重申一次, **副作用函数对于依赖项的声明, 一定要保持诚实.** 我们总是能够找到更好的解决方案的. 一个普遍存在的误解是: "函数始终不会变化". 但是这篇文章阅读下来之后我们会发现, 事实并不是这样. 真实情况是, 定义在组件内部的函数在每一次渲染过程中都会有变化.
 
 **这种现象也揭示了一个问题.** 如果我们现在有两个副作用函数, 调用了 `getFetchUrl:`
 
@@ -1290,7 +1289,7 @@ function SearchResults() {
 
 在上面的示例中, 我们不会将 `getFetchUrl` 方法移动到副作用函数的内部, 因为如果这样的话, 副作用函数就无法共享 `getFetchUrl` 方法.
 
-但是如果你对依赖项数组始终保持诚实, 或许会遇到另一个问题. 由于我们的两个副作用函数都依赖 `getFetchUrl` (**每一次渲染都有所差异**), 此时依赖项数组可以说基本上没什么用:
+另一方面, 因为我们要对依赖项数组始终保持诚实, 就会遇到另一个问题. 由于我们的两个副作用函数都依赖 `getFetchUrl` (**每一次渲染都有所差异**), 如果传递了 `getFetchUrl`, 依赖项数组就基本上没什么用了, 因此每次渲染, 副作用函数都会重新执行:
 
 ```jsx
 function SearchResults() {
@@ -1313,7 +1312,7 @@ function SearchResults() {
 }
 ```
 
-为了解决这个问题, 可以考虑在依赖项数组中直接省略 `getFetchUrl` 这个依赖. 但这并不是一个好的解决方案, 当我们要修改组件中的数据流的时候, 如果副作用函数消费了相关数据, 就会引起一些奇奇怪怪的问题. 比如我们先前碰到的, 间隔函数不更新的 bug.
+为了解决这个问题, 可以考虑在依赖项数组中直接省略 `getFetchUrl` 这个依赖. 但这并不是一个好的解决方案, 当我们要修改组件中的数据流的时候, 如果副作用函数消费了相关数据, 就会引起一些奇奇怪怪的问题. 比如我们先前碰到的, 间隔(interval)函数不更新的 bug.
 
 其实还有其他更简单的解决方案.
 
@@ -1405,9 +1404,9 @@ function SearchResults() {
 }
 ```
 
-因为使用了 `useCallback`, 如果 `query` 参数始终保持不变的话, `getFetchUrl` 也就不会有变化, 那么副作用函数也就不会重新执行. 但是如果 `query` 变化了, `getFetchUrl` 也会同时发生变化, 然后重新请求数据. 这就好像是当我们修改 Excel 中的某个单元格之后, 其他单元格中的数据如果依赖这个单元格的数据, 就会根据新的数据重新计算对应的结果.
+因为使用了 `useCallback`, 如果 `query` 参数始终保持不变的话, `getFetchUrl` 也就不会有变化, 那么副作用函数也就不会重新执行. 如果 `query` 变化了, `getFetchUrl` 也会同时发生变化, 然后重新请求数据. 这就好像是当我们修改 Excel 中的某个单元格之后, 其他单元格中的数据如果依赖这个单元格的数据, 就会根据新的数据重新计算对应的结果.
 
-拥抱了数据流和同步的心智模型之后, 就会产生这样的结果. **同样的方式对于函数组件的 props 也一样奏效:**
+拥抱了数据流和同步的心智模型之后, 就自然会得到这样的结果. **同样的解决方式对于函数组件的 props 也一样奏效:**
 
 ```jsx
 function Parent() {
@@ -1437,7 +1436,7 @@ function Child({ fetchData }) {
 
 ### 函数是数据流的一部分吗
 
-很有意思的是, 这种模式在函数式组件下就完全不适用了, 这也从另一方面体现出了副作用函数的心智模型和生命周期模式存在的区别. 查看下面的代码:
+很有意思的是, 这种模式在函数式组件下就完全不适用了, 这也从另一方面体现出了副作用函数的心智模型和生命周期模式存在差异. 查看下面的对应类组件代码:
 
 ```jsx
 class Parent extends Component {
@@ -1470,7 +1469,7 @@ class Child extends Component {
 }
 ```
 
-你或许会认为: "我们已经有一个共识了: `useEffect` 就像是 `componentDidMount` 和 `componentDidUpdate` 的结合体, 你不需要时时刻刻重申这个观点!" **但是实际上, 这个观点在某些方面是错的, 对于 `componentDidUpdate`, 就存在一些问题**:
+你或许会认为: "我们都知道: `useEffect` 就像是 `componentDidMount` 和 `componentDidUpdate` 的结合体, 你不需要时时刻刻重申这个观点!" **但是实际上, 这个观点是错的, `useEffect` 无法完全模拟 `componentDidUpdate` 的行为**:
 
 ```jsx
 class Child extends Component {
@@ -1481,18 +1480,22 @@ class Child extends Component {
     this.props.fetchData()
   }
   componentDidUpdate(prevProps) {
+    // highlight-start
     // 🔴 这种情况永远不会发生
     if (this.props.fetchData !== prevProps.fetchData) {
       this.props.fetchData()
     }
   }
+    // highlight-end
   render() {
     // ...
   }
 }
 ```
 
-当然了, `fetchData` 是一个类方法!(也可以说是类的属性 -- 但是这并不能改变任何事.) 即使 state 产生变化, 这个类方法也不会随之变化. 因此 `this.props.fetchData` 的值始终与 `prevProps.fetchData` 的值一致, 因此遇上代码中的情况永远不会发生. 那么我们可以直接移除这种情况吗?
+MARK
+
+当然了, `fetchData` 是一个类方法!(也可以说是类的属性 -- 但是这并不能改变什么.) 即使 state 产生变化, 这个类方法也不会随之变化. 因此 `this.props.fetchData` 的值始终与 `prevProps.fetchData` 的值一致, 因此遇上代码中的情况永远不会发生. 那么我们可以直接移除这种情况吗?
 
 ```jsx
  componentDidUpdate(prevProps) {

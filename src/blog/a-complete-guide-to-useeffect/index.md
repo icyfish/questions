@@ -8,9 +8,6 @@ description: "A Complete Guide to useEffect"
 ---
 
 原文: [A Complete Guide to useEffect](https://overreacted.io/a-complete-guide-to-useeffect/)
-
-TLDR Part
-
 ### 每次渲染都有自己的 Props 和 State
 
 开始聊 effect 之前, 我们先开始聊一聊组件的渲染.
@@ -31,7 +28,7 @@ function Counter() {
 }
 ```
 
-以上的代码实际上发生了什么呢? `count` 是不是在时刻关注我们的状态(state)变化, 然后根据这个变化自动更新呢? 这个猜测十分符合直觉, 可能会在你刚开始学习 React 的时候给你带来比较大的帮助. 但是实际上, 这个理解并不准确. 我写过一篇关于这个话题的文章, 这才是[准确的心智模型](https://overreacted.io/react-as-a-ui-runtime/). <mark>加上译文(react as a ui runtime</mark>
+以上的代码实际上发生了什么呢? `count` 是不是在时刻关注我们的状态(state)变化, 然后根据这个变化自动更新呢? 这个猜测十分符合直觉, 如果你是 React 初学者, 这个想法可能会为你理解 React 带来比较大的帮助. 但是实际上, 这个理解并不准确. 我写过一篇关于这个话题的文章, 这才是[准确的心智模型](https://overreacted.io/react-as-a-ui-runtime/). <mark>加上译文(react as a ui runtime</mark>
 
 **在上面的例子中, `count` 仅仅是个数字而已.** 内部并没有"数据绑定", "观察者", "代理"等等的逻辑. 就像下面的代码示例一样, 它仅仅只是一个数字:
 
@@ -73,7 +70,7 @@ function Counter() {
 }
 ```
 
-**无论何时, 状态更新之后, React 都会重新调用我们的组件. 每一次渲染的结果都会"看到"组件内部的 `counter` 状态值, 而这个值在函数中实际上是一个*常量*.**
+**无论何时, 状态更新之后, React 都会重新调用我们的组件. 每一次渲染的结果都会"看到"组件内部的 `count` 状态值, 而这个值在函数中实际上是一个*常量*.**
 
 所以说以下这一行代码并没有任何特殊的数据绑定逻辑:
 
@@ -81,11 +78,11 @@ function Counter() {
 <p>You clicked {count} times</p>
 ```
 
-**它仅仅只是将数字的值嵌入到渲染结果中而已.** 这个数字是由 React 提供的. 当我们调用 `setCount` 的时候, React 会用一个最新的 `count` 值来重新调用我们的组件. 然后 React 更新 DOM, 以匹配最新的渲染结果.
+**它仅仅只是将数字的值添加到渲染结果中而已.** 这个数字由 React 提供. 当我们调用 `setCount` 的时候, React 会用一个最新的 `count` 值来重新调用我们的组件. 然后 React 更新 DOM, 以匹配最新的渲染结果.
 
 这里的关键点是: `count` 值在每次渲染的过程中, 都是一个固定的常量. 只有组件被重新调用, 每一次渲染都"看到了"对应的 `count` 值, 同时每一次渲染的 `count` 都互不关联.
 
-(想要更深入地了解具体的渲染流程, 可以查看这篇文章: [React 作为 UI 运行时](https://overreacted.io/react-as-a-ui-runtime/))
+_(想要更深入地了解具体的渲染流程, 可以查看这篇文章: [React 作为 UI 运行时](https://overreacted.io/react-as-a-ui-runtime/))_
 
 ### 每次渲染都有自己的事件处理器
 
@@ -119,7 +116,7 @@ function Counter() {
 
 - 将计时器的值**增加**到 3
 - **点击**"Show alert"
-- 在定时器的回调(`alert`函数)被执行之前将计时器的值**增加**到 5
+- 在定时器的回调(`alert`函数)执行之前将计时器的值**增加**到 5
 
 ![counter](./counter.gif)
 
@@ -127,25 +124,27 @@ function Counter() {
 
 ---
 
-剧透:
+_剧透:_
 
 ---
 
 可以在[这里](https://codesandbox.io/s/w2wxl3yo0l)自己试一试!
 
-如果这个示例对你来说很费解, 可以想象一个更实际的例子: 假设现在有一个聊天应用, 我们将 count 类比为当前接受的消息对应的 ID, 存储在 state 中, 将按钮类比为发送消息的按钮. [这篇文章](https://overreacted.io/how-are-function-components-different-from-classes/)详细解释了出现上述结果的原因, 正确答案是 3.
+如果这个示例对你来说很费解, 可以想象一个更实际的例子: 假设现在有一个聊天应用, 我们将 count 类比为当前接受的消息对应的 ID, 存储在 state 中, 将按钮类比为发送消息的按钮, 这样可能会更容易理解. 
+
+[这篇文章](https://overreacted.io/how-are-function-components-different-from-classes/)详细解释了出现上述结果的原因, 正确答案是 3.
 
 `alert` 会"捕捉"点击当时 state 的值.
 
-(_当然, 我们可以修改代码以实现其他的场景, 但是目前我只关注默认场景. 当我们在建立一个全新的心智模型的时候, 选择最简单的方式十分重要, 这样能帮助我们更容易地理解这个概念._)
+(_当然, 我们可以修改代码以实现其他的行为, 但是目前我只关注默认场景. 当我们在建立一个全新心智模型的时候, 要尽可能选择最简单的方式, 这样能帮助我们更容易地建立全新的心智模型._)
 
 ---
 
 那么其中的原理是什么呢?
 
-我们先前提到过, `count` 值在每次被调用时都是一个常量. 有必要重点指出的是 -- **我们的函数(组件)会被调用多次(每次渲染被调用一次), 每一次被调用时, 这个 count 都会是由 useState 控制的一个特定值.**
+我们先前提到过, `count` 值在每次被调用时都是一个常量. 有必要重点指出的是 -- **我们的函数(组件)会被调用多次(每次渲染被调用一次), 每一次被调用时, 这个 count 都是由 useState 控制的一个特定值.**
 
-这种特性并非 React 独有 -- 普通的函数也是这样工作的:
+这个特性并非 React 独有 -- 普通的函数也是这样工作的:
 
 ```js
 function sayHi(person) {
@@ -168,7 +167,7 @@ sayHi(someone)
 
 在这个[示例](https://codesandbox.io/s/mm6ww11lk8)中, 外部的 `someone` 变量被多次重新赋值. (就像在 React 中, 当前组件的 state 不断变化一样. ) **在 `sayHi` 内部, 有一个变量 `name`, 它会读取 `person` 的 `name` 属性.** 这个变量在函数内部, 每次调用之间都是独立的. 因此, 当定时器的回调被调用的时候, 每次 alert 都会"记住"当时的 `name`.
 
-这也解释了我们的事件处理器是如何在点击的当下"捕捉" `count` 值. 同理, 每次渲染都能"看到"自己的 `count`:
+这也解释了我们的事件处理器是如何在点击的当下"捕捉" `count` 值的. 同理, 每次渲染都能"看到"自己的 `count`:
 
 ```jsx
 // 首次渲染
@@ -260,17 +259,17 @@ function Counter() {
 }
 ```
 
-这也是为什么, 在这里的[示例](https://codesandbox.io/s/w2wxl3yo0l)中, 事件处理器"属于"各自的渲染, 当用户点击的时候, 会使用那次渲染的 `counter` 值.
+这也是为什么, 在这里的[示例](https://codesandbox.io/s/w2wxl3yo0l)中, 事件处理器"属于"各自的渲染, 当用户点击的时候, 会使用那次渲染的 `count` 值.
 
 **对于每一次渲染, 内部的 props 和 state 始终保持不变, 并且每次渲染都是独立的.** 既然每次渲染的 props 和 state 各自独立, 消费它们的部分(包括事件处理器), 在渲染间也各自独立, 都从属于特定的渲染. 因此事件处理器内部的异步函数也会"看到"同样的 `count` 值.
 
-_边注: 我在 `handleAlertClick` 中直接使用了 `count` 值. 这样的替换是安全的, 因为在一次渲染流程中, `count` 值不可能有变化. 它被声明为 `const`, 且是一个不可变的数字. 同样的原则在对象中仍然适用, 不过我们必须要确保避免改变(mutate)状态的值. 用一个新创建的对象去调用 `setSomething(newObj)`, 而不改变(mutate)这个对象. 这样的话, 前一次渲染的状态(state)值就能够保持不被下一次渲染修改._
+_边注: 我在 `handleAlertClick` 中直接使用了 `count` 值. 这样的替换是安全的, 因为在一次渲染流程中, `count` 值不可能有变化. 它被声明为 `const`, 且是一个不可变的数字. 同样的原则在对象中仍然适用, 不过我们必须要确保避免改变(mutate)状态的值. 做法是用一个新创建的对象去调用 `setSomething(newObj)`, 而不改变这个对象. 这样的话, 前一次渲染的状态(state)值就能够保持不被下一次渲染修改._
 
 ### 每次渲染都有自己的副作用
 
-这篇文章的主要内容本该是副作用(effect), 现在我们会开始详细介绍它. 其实, 副作用和以上两部分的行为类似, 每次渲染都有自己的副作用.
+这篇文章的主要内容本该是关于副作用函数(effect)的, 现在我们会开始详细介绍它. 其实, 副作用和以上两部分的行为类似, 每次渲染都有自己的副作用函数.
 
-现在我们回到 React [文档](https://reactjs.org/docs/hooks-effect.html)中的例子:
+我们回到 React [文档](https://reactjs.org/docs/hooks-effect.html)中的例子:
 
 ```jsx
 function Counter() {
@@ -296,7 +295,7 @@ function Counter() {
 
 都不是的.
 
-先前我们已经知道, `count` 在每次特定的组件渲染流程中, 都是一个常量. 事件处理器从它所属的渲染流程中读取到了对应的 `count` 值, 因为 `count` 是处于对应作用域的变量. 在 effect 函数中也是这样的!
+先前我们已经知道, `count` 在每次特定的组件渲染流程中, 都是一个常量. 事件处理器从它所属的渲染流程中读取到了对应的 `count` 值, 因为 `count` 是处于对应作用域的变量. 在 effect 函数中也不例外!
 
 **并不是在一个"不会变化"的副作用方法中, `count` 变量值时刻变化. 而是每一次渲染, 副作用函数本身都不一样.**
 
@@ -350,13 +349,13 @@ React 会记住每一次你所提供的副作用方法, 在当次渲染流程结
 
 尽管每一次渲染的副作用方法看起来没有差别(功能都是更新文档的标题), 但是实际上每一次渲染这个方法都是不一样的 -- 并且每一个副作用方法都会看到"渲染"当次的 props 和 state.
 
-**在概念上, 你可以把副作用方法理解为每次渲染的结果.**
+**为了便于理解, 你可以把副作用方法当做是每次渲染的结果.**
 
-但是严格来说, 它们并不是渲染结果(为了能够通过简单的语法[实现 Hooks 的组合](https://overreacted.io/why-do-hooks-rely-on-call-order/), 减少运行时的开销). 但是基于我们目前想要建立的心智模型, 可以在概念上认为副作用函数是某一次渲染的结果.
+但严格来说, 它们并不是渲染结果(为了能够通过简单的语法[实现 Hooks 的组合](https://overreacted.io/why-do-hooks-rely-on-call-order/), 减少运行时的开销, React 没有将副作用方法设计为渲染结果). 但是考虑到我们目前的目的, 建立的全新的心智模型, 可以在概念上认为副作用函数是某一次渲染的结果.
 
 ---
 
-现在来巩固一下以上的内容, 首先回顾首次渲染:
+现在来巩固以上的内容, 首先回顾首次渲染:
 
 - **React:** 当 state 值为 `0` 的时候, 给我你希望渲染的 UI 内容.
 - **组件:**
@@ -369,10 +368,10 @@ React 会记住每一次你所提供的副作用方法, 在当次渲染流程结
 
 ---
 
-现在回顾点击之后的渲染流程:
+然后回顾点击之后的渲染流程:
 
-- **组件:** Hey, React, 把我的状态(state)值设置为 `1`.
-- **React:** 当状态更新为 `1` 的时候, 把对应的 UI 返回给我吧.
+- **组件:** Hey, React, 把我状态(state)中的 `count` 值设置为 `1`.
+- **React:** 当 `count` 更新为 `1` 的时候, 把对应的 UI 返回给我吧.
 - **组件:**
   - 这是渲染的结果: `<p>You clicked 1 times</p>`.
   - 记得执行这个副作用方法: `() => { document.title = 'You clicked 1 times' }`.
@@ -1493,9 +1492,7 @@ class Child extends Component {
 }
 ```
 
-MARK
-
-当然了, `fetchData` 是一个类方法!(也可以说是类的属性 -- 但是这并不能改变什么.) 即使 state 产生变化, 这个类方法也不会随之变化. 因此 `this.props.fetchData` 的值始终与 `prevProps.fetchData` 的值一致, 因此遇上代码中的情况永远不会发生. 那么我们可以直接移除这种情况吗?
+当然了, `fetchData` 是一个类方法!(也可以说是类的属性 -- 但是这并不能改变什么.) 即使 state 产生变化, 这个类方法也不会随之变化. 因此 `this.props.fetchData` 的值始终与 `prevProps.fetchData` 的值一致, 因此遇上代码中的情况永远不会发生. 那么我们可以直接移除这个条件判断吗?
 
 ```jsx
  componentDidUpdate(prevProps) {
@@ -1503,7 +1500,7 @@ MARK
   }
 ```
 
-但是如果代码是以上这样的话, 每一次重新渲染都会重新请求数据. (在组件树中添加一些动画会更直观得看到呈现出的变化.) Maybe let’s bind it to a particular query?
+并不可以, 如果我们修改代码为以上这样, 每一次重新渲染都会重新请求数据. (在组件树中添加一些动画会更直观地发现这个变化.) 那么将 `fetchData` 绑定到特定的 query 中, 会怎么样呢?
 
 ```jsx
   render() {
@@ -1511,9 +1508,9 @@ MARK
   }
 ```
 
-但是即使 `query` 没有变化, `this.props.fetchData !== prevProps.fetchData` 的值始终是 `true`. 因此始终会重新请求数据.
+这样修改之后, 即使 `query` 没有变化, `this.props.fetchData !== prevProps.fetchData` 的值也始终是 `true`. 因此始终会重新请求数据.
 
-针对这个复杂的问题, 唯一的解决方案是将 `query` 参数本身传递到 `Child` 组件中. `Child` 组件实际上并不会使用 `query` 参数, 但是在 `query` 变化的时候, 需要依赖 `Child` 组件的重新渲染以发起数据的重新请求:
+对于这个问题, 唯一的解决方案是迎难而上, 将 `query` 参数本身传递到 `Child` 组件中. `Child` 组件实际上并不会使用 `query` 参数, 但是在 `query` 变化的时候, 需要依赖 `Child` 组件的重新渲染以发起数据的重新请求:
 
 ```jsx
 class Parent extends Component {
@@ -1550,11 +1547,11 @@ class Child extends Component {
 }
 ```
 
-很长一段时间, 我们使用的都是 React 类组件, I’ve gotten so used to passing unnecessary props down and breaking encapsulation of parent components that I only realized a week ago why we had to do it.
+很长一段时间, 我们使用的都是 React 类组件, 我很习惯于将一些不必要的 props 传递到组件中, and breaking encapsulation of parent components that I only realized a week ago why we had to do it.
 
-**在类组件的场景下, 函数的 props 本身并不是数据流的一部分.** Methods close over the mutable this variable so we can’t rely on their identity to mean anything. 因此, 即使我们需要的只是一个函数, 也得同时传递一些其他数据, 这样 React 才能够有机会进行 "diff". 同时, 我们无法知道从父组件中传递下来的 `this.props.fetchData` 本身是否依赖于某个 state 值, 这个值是否变化过.
+**在类组件的场景下, 函数的 props 本身并不是数据流的一部分.** 组件的方法包裹了可变的 this, 因此它们的签名所表示的含义实际上没有一点保障. 所以, 即使我们需要的只是一个函数, 也得同时传递一些其他数据, 这样 React 才能够进行 "diff" 的操作. 同时, 我们无法知道从父组件中传递下来的 `this.props.fetchData` 本身是否依赖于某个 state 值, 这个值是否变化过.
 
-**使用 `useCallback` 之后, 函数就能够参与到数据流中了.** 如果函数接受的参数变化了, 那么函数本身也会变化, 否则就不会变化. 由于 `useCallback` 提供了足够的颗粒度, changes to props like props.fetchData can propagate down automatically.
+**使用 `useCallback` 之后, 函数就能够参与到数据流中了.** 如果函数接受的参数变化了, 那么函数本身也会变化, 否则就不会变化. 由于 `useCallback` 的功能足够完善, 属性的变化, 如 `props.fetchData` 也会传递下去.
 
 类似地, [`useMemo`](https://reactjs.org/docs/hooks-reference.html#usememo) 也提供了与 `useCallback` 类似的功能, 使得我们能够针对复杂的对象做出类似的处理:
 
@@ -1568,13 +1565,13 @@ function ColorPicker() {
 }
 ```
 
-**我想要重点声明的一点是, 对每一个函数都用 `useCallback` 包裹实际上十分笨重.** 有一种方式可以避免这种形式的代码, It’s a nice escape hatch and it’s useful when a function is both passed down and called from inside an effect in some children. Or if you’re trying to prevent breaking memoization of a child component. But Hooks lend themselves better to avoiding passing callbacks down altogether.
+**我想要重点声明的一点是, 如果对每一个函数都用 `useCallback` 包裹, 代码会显得十分笨重.** 有一种方式可以避免这种形式的代码, It’s a nice escape hatch and it’s useful when a function is both passed down and called from inside an effect in some children. Or if you’re trying to prevent breaking memoization of a child component. But Hooks lend themselves better to avoiding passing callbacks down altogether.
 
 In the above examples, I’d much prefer if fetchData was either inside my effect (which itself could be extracted to a custom Hook) or a top-level import. I want to keep the effects simple, and callbacks in them don’t help that. (“What if some props.onComplete callback changes while the request was in flight?”) You can simulate the class behavior but that doesn’t solve race conditions.
 
-### Speaking of Race Conditions
+### 竞速场景
 
-一个典型的请求数据的示例会是如下这样:
+以一个典型的数据请求场景作为示例:
 
 ```jsx
 class Article extends Component {
@@ -1617,15 +1614,15 @@ class Article extends Component {
 }
 ```
 
-后面一段代码实例做出了一些优化, 但是依然存在 bug. 可能出现的问题是: 数据请求或许会出现顺序错乱的情况. 比如说, 当我用 `{id: 10}` 执行请求的时候, id 变成了 20, 我们或许会先获取到 `{id: 20}` 的请求结果, 这样的现象就会导致我们的 state 中存储的结果出现错误.
+后面一段代码示例做出了一些优化, 但是依然存在问题: 数据请求可能会出现顺序错乱的情况. 比如说, 当我用 `{id: 10}` 执行请求的时候, id 变成了 20, 在实际的请求过程中, 我们可能会先获取到 `{id: 20}` 的请求结果, 这样的现象就会导致 state 中存储的结果出现混乱.
 
-这样的现象叫做: 竞争情况, 在混入了 `async` / `await` 的代码中是一个尤其典型的情况. (which assumes something waits for the result) with top-down data flow (props or state can change while we’re in the middle of an async function).
+这样的现象叫做: 竞速场景(Race Condition), 在存在 `async` / `await` 和数据流自上而下传递的代码中, 经常会发生这种情况(它假设了某些值会等待异步的结果, 但是代码执行到异步函数的中间时, props 或者 state 可能会发生变化.)
 
-副作用函数并没有解决这个问题的魔力, 虽然在你传递 `async` 函数到副作用方法中时, 会抛出一些警告信息. (之后我们会改进这个警告信息, 以披露出更多的信息, 告诉用户这样的方式会遇到的问题.)
+虽然在你传递 `async` 函数到副作用函数中时, 会抛出一些警告信息, 但是副作用函数并没有能力解决这个问题. (之后我们会改进这个警告信息, 以披露出更多的信息, 告诉用户这样的使用方式会遇到的问题.)
 
-如果你使用的异步方法支持被取消的话, 就可以在清除函数中取消这个异步操作.
+如果你使用的异步方法支持被取消的话, 可以在清除函数中取消这个异步操作, 以解决以上的问题.
 
-除了这种方式之外, 还有一个简单的权宜之计, 利用一个标志来追踪请求是否被取消:
+除了这种方式之外, 还有一个简单的方法: 利用一个标志来追踪请求是否被取消:
 
 ```jsx
 function Article({ id }) {
@@ -1655,23 +1652,23 @@ function Article({ id }) {
 }
 ```
 
-[这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)详细阐释了你应该如何处理异常情况和加载的状态, 简单描述就是将这部分逻辑提取到一个自定义的 Hook 中. 如果你想要学习更多有关于如何使用 Hook 请求数据的知识的话, 可以阅读这篇文章.
+[这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)详细阐释了你应该如何处理异常情况和加载的状态, 简单概括就是将这部分逻辑提取到一个自定义的 Hook 中. 如果你想要学习更多有关于如何使用 Hook 请求数据的内容的话, 可以阅读这篇文章.
 
 ### 进阶的理解
 
-在类组件生命周期的心智模型下, side effects behave differently from the render output. UI 的渲染由 props 和 state 的变化驱动, 并且会确保渲染结果与它们的变化始终保持一致, 但是在副作用的心智模型下, 情况就不是这样了. 对两者概念的混淆, 也经常会引起一些 bug.
+在类组件生命周期的心智模型下, 副作用函数的行为和渲染的结果是有一定差异的. UI 的渲染由 props 和 state 的变化驱动, 并且会确保渲染结果与两者的变化始终保持一致. 但是在副作用的心智模型下, 情况就不是这样了. 对两者的混淆, 也经常会引起一些 bug.
 
 在 `useEffect` 的心智模型下, 默认情况下所有场景都是同步的. 副作用函数变成了 React 数据流的一部分. 如果开发者对于每一个 `useEffect` 都正确处理的话, 组件也能够更好地处理极端情况.
 
-然而, 处理好 `useEffect` 的成本很大也很繁琐. 编写同步的代码, 处理极端情况, 比处理一次性的副作用难度大上很多.
+然而, 处理好 `useEffect` 的成本很大也很繁琐. 编写同步的代码, 处理极端情况, 比处理一次性的副作用(不严格与渲染的结果保持一致)难度大上很多.
 
-如果我们在日常开发中经常用到 `useEffect` 的话, 情况就会变得很繁琐. 幸运的是, `useEffect` 是一个较为底层的 API. 因为目前尚处于 Hooks 出现的早期阶段, 因此大家会比较经常使用它, 特别是在某些教程中. 随着时间的发展, 社区会出现更多高阶的 Hook API, 这样依赖, `useEffect` 的使用场景就会变少了.
+如果我们在日常开发中经常用到 `useEffect` 的话, 情况就会变得很繁琐. 幸运的是, `useEffect` 是一个较为底层的 API. 因为目前尚处于 Hooks 出现的早期阶段, 因此大家会比较经常使用它, 特别是在某些教程中. 随着时间的发展, 社区会出现更多高阶的 Hook API, 这样一来, `useEffect` 的使用场景就会变少了.
 
-目前已经有许多应用,实现了一些自己的 Hooks, 比如 `useFetch`, 除了基本功能之外, 还封装了一些鉴权逻辑, `useTheme`, 则是利用 context 实现了某些功能. 一旦我们封装了类似的自定义 Hooks, 用到 `useEffect` 的场景, 自然也就变少了. 尽管 `useEffect` 上手比较复杂, 但是它的能力也为基于它实现的 Hooks 带来了很多好处.
+据我了解, 目前已经有许多应用, 实现了一些自己的 Hooks, 比如 `useFetch`, 除了基本功能之外, 还封装了一些鉴权逻辑. 比如 `useTheme`, 则是利用 context 实现了切换主题的功能. 一旦我们封装了类似的自定义 Hooks, 用到 `useEffect` 的场景, 自然也就变少了. 尽管 `useEffect` 上手比较复杂, 但是它的能力也为基于它实现的 Hooks 带来了很多好处.
 
 截止目前, `useEffect` 的大部分使用场景都是请求数据. But data fetching isn’t exactly a synchronization problem. This is especially obvious because our deps are often `[]`. What are we even synchronizing?
 
-从长远角度看, 专门用以请求数据的 [Suspense 特性](https://reactjs.org/blog/2018/11/27/react-16-roadmap.html#react-16x-mid-2019-the-one-with-suspense-for-data-fetching) 使得第三方库 have a first-class way 来告诉 React 延迟渲染的流程, 直到某些异步的流程结束再开始渲染.
+从长远角度看, 专门用以请求数据的 [Suspense 特性](https://reactjs.org/blog/2018/11/27/react-16-roadmap.html#react-16x-mid-2019-the-one-with-suspense-for-data-fetching) 使得第三方库能够直接告诉 React 延迟渲染的流程, 直到某些异步的流程结束再开始渲染.
 
 随着 Suspense 逐渐覆盖越来越多的数据请求场景, 我猜测 `useEffect` 会逐渐用于其他需要同步 props 和 state 至副作用函数中的场景. `useEffect` 的设计初衷, 也是处理这样的场景, 而并非数据请求. 到那时候, 类似[这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)中的自定义 Hooks, 就会更多地被用于数据请求.
 

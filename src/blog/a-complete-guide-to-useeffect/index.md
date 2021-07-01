@@ -955,10 +955,7 @@ _(依赖项变化了, 因此我们重新执行副作用函数.)_
   }, [count]);
 ```
 
-为了达到我们的目的, 首先思考一个问题, **`count` 的作用是什么呢?** 看起来只有在 `setCount` 函数中才会用到它. 这样分析下来发现, 我们的副作用函数内其实可以不依赖 `count`. 当我们需要基于前一个状态更新当前状态的时候, 可以用 `setState` 的[函数形式](https://reactjs.org/docs/hooks-reference.html#functional-updates)更新状态.
-
-
-MARK
+为了达到我们的目的, 首先思考一个问题, **`count` 的作用是什么呢?** 看起来只有在 `setCount` 函数中才会用到它. 这样分析下来发现, 我们的副作用函数内其实可以不依赖 `count`. 当我们需要基于前一个状态更新当前状态的时候, 可以用 `setState` 的[函数更新的方式](https://reactjs.org/docs/hooks-reference.html#functional-updates)更新状态.
 
 ```jsx
   useEffect(() => {
@@ -970,28 +967,28 @@ MARK
   }, []);
 ```
 
-我倾向于将这些情况看作是"错误的依赖". 如果我们的副作用函数的内容是 `setCount(count + 1)`, 那么 `count` 就是一个必要的依赖项. 再仔细观察可以看到, 我们其实只需要 `count` 的值用来计算 `count + 1`, 然后将计算得出的值抛给 React. 不过, React 其实早已知道当前的 `count` 值. **那么我们只需要告诉 React , 如何更新(+1) `count` 值, 就可以了, 不管当前的 count 值是多少, React 都能够正确计算最终的结果.**
+我倾向于将这些情况看作是"错误的依赖". 如果我们的副作用函数的内容是 `setCount(count + 1)`, 那么 `count` 就是一个必要的依赖项. 再仔细观察可以发现, 我们其实只依赖 `count` 的值用来计算 `count + 1`, 然后将计算得出的值抛给 React. 不过, React 其实早已知道当前的 `count` 值. **那么我们只需要告诉 React , 如何更新(+1) `count` 值, 就可以了, 不管当前的 `count` 值是多少, React 都能够正确计算最终的结果.**
 
 其实, `setCount(c => c + 1)` 做的就是这件事情. 你可以认为它传递了一个指令给 React, 告诉 React 应该如何更新状态的值. 这种更新状态的形式在一些其他场景下同样能够发挥很大的用处, 比如当我们需要[合并状态的更新](https://overreacted.io/react-as-a-ui-runtime/#batching)的时候.
 
-**注意, 此时我们将依赖从依赖数组中删除, 是真正不需要这个依赖了, 并没有欺骗 React, 我们的副作用函数不再需要读取 `counter` 的值了.**
+**注意, 此时我们将依赖从依赖数组中删除, 是真正不需要这个依赖了, 并没有欺骗 React, 我们的副作用函数确实不再需要读取 `count` 的值了.**
 
 ![](./interval-right.gif)
 
-_(依赖项前后一直, 因此我们跳过副作用方法的执行)_
+_(依赖项前后一致, 因此我们跳过副作用方法的执行)_
 
 可以在这里[试一试](https://codesandbox.io/s/q3181xz1pj).
 
-尽管副作用函数只执行了一次, 属于第一次渲染 interval 回调函数依然在每次回调执行的时候, 完美地将 `c => c + 1` 的更新指令传达给了 React . 副作用函数不再依赖当前的 `counter` 值, 因为 React 已经知道它了.
+尽管副作用函数只执行了一次, 属于第一次渲染 interval 回调函数依然在每次执行的时候, 完美地将 `c => c + 1` 的更新指令传达给了 React . 副作用函数不再依赖当前的 `count` 值, 因为 React 已经知道它的值了.
 ### 函数式更新与 Google Docs
 
-还记得我们提到的, 副作用的心智模型与同步有关吗? 关于同步很有意思的一点是, <mark>is that you often want to keep the “messages” between the systems untangled from their state. </mark> 举个例子, 当我们在 Google Docs 上编辑一份文档时, 并没有将整个页面内容传给服务器, 因为这样将会十分低效. Instead, it sends a representation of what the user tried to do.
+还记得我们提到的, 副作用的心智模型与同步有关吗? 关于同步很有意思的一点是, 我们通常希望解耦系统和系统内部状态之间的通信. 举个例子, 当我们在 Google Docs 上编辑一份文档时, 并没有将整个页面内容传给服务器, 因为这样将会十分低效. 取而代之传递的是用户要做的动作.
 
-当然我们的场景和 Google Docs 并不完全相同, 不过 effect 的概念还是同样适用的. **It helps to send only the minimal necessary information from inside the effects into a component.** 更新状态的函数的形式 `setCount(c => c + 1)` 比起 `setCount(count + 1)` 承载了更少的信息. 因为 `setCount` 依赖于当前 `count` 的值. <mark>Thinking in React involves finding the minimal state. This is the same principle, but for updates.</mark>
+当然我们的场景和 Google Docs 并不完全相同, **不过这种哲学在 effect 中同样适用. 只传递尽可能少的必需的信息到组件中.** 更新状态的函数形式 `setCount(c => c + 1)` 比起 `setCount(count + 1)` 表达了更少的信息. 因为 `setCount` 依赖于当前 `count` 的值. 要把 React 写好, 我们应该秉承这样一个理念: 选择尽可能简单的 state 形式来表达 UI. 这种理念在状态的更新中同样适用.
 
-对 _意图_ (而不是结果)进行编码, 与 Google Docs [解决协同编辑](https://medium.com/@srijancse/how-real-time-collaborative-editing-work-operational-transformation-ac4902d75682)的方案很相似. While this is stretching the analogy, functional updates serve a similar role in React. 这样的方式确保了, 即使更新来自与多个来源(事件处理器, 副作用函数订阅等), 也能够在一次批量操作中正确地执行, 并且能够预测更新的结果.
+对 _意图_ (而不是结果)进行编码, 与 Google Docs [解决协同编辑](https://medium.com/@srijancse/how-real-time-collaborative-editing-work-operational-transformation-ac4902d75682)的方案很相似. 在 React 中用函数形式更新状态也是类似的实践. 这样的方式确保了, 即使更新来自于多个来源(事件处理器, 副作用函数订阅等), 也能够在一次批量操作中正确地执行, 并且能够预测更新的结果.
 
-**不过, `setCount(c => c + 1)` 的更新方式并不是特别出色.** 因为这种形式看起来有点奇怪, 并且在某种程度上限制了我们的能力. 比如说, 当我们有两个状态变量, 且两者互相依赖, 或者是我们需要通过属性计算下一次渲染的状态值时, 就没办法使用函数式的更新方式. 不过幸运的是, 我们还有 `useReducer`, 它的更新模式与函数式的更新方式类似, 但是功能更加强大.
+**不过, `setCount(c => c + 1)` 的更新方式并不是特别完美.** 因为这种形式看起来有点奇怪, 并且在某种程度上限制了我们的能力. 比如说, 当我们有两个状态变量, 且两者互相依赖, 或者是我们需要通过属性计算下一次渲染的状态值时, 就没办法使用函数式的更新方式. 不过幸运的是, 我们还有 `useReducer`, 它的更新方式与函数式的更新方式类似, 但是功能更加强大.
 
 ### 将状态更新从 actions 中解耦
 
@@ -1024,13 +1021,13 @@ function Counter() {
 
 此刻我们**并没有欺骗** React. 因为在副作用函数中使用了 `step` , 我们在依赖参数中也加上了它, 因此函数执行的结果始终是准确的.
 
-对于上述的例子, 可以这样描述它的行为, 一旦 `step` 的值发生变化, 就会重新开始执行这个间隔 (interval) 函数, 因为 `step` 存在于依赖参数数组中. 大多数情况下, 这就是我们期待的结果: 销毁副作用函数并创建一个全新的副作用函数. 这是一个比较合理的模式, 正常情况下, 这也是我们无法避免的模式.
+对于上述的例子, 可以这样描述它的行为, 一旦 `step` 的值发生变化, 就重新开始执行这个间隔 (interval) 函数(因为 `step` 存在于依赖参数数组中). 大多数情况下, 这就是我们期待的结果: 销毁副作用函数并创建一个全新的副作用函数. 这是一个比较合理的模式, 正常情况下, 它也是唯一可以选择的更新方式.
 
-不过, 如果我们期待的结果是这样的, 可能就没办法采取以上的模式了: `step` 变化不会引起副作用函数的销毁和重新创建. 应该怎样把 `step` 从副作用函数的依赖数组中删除呢?
+不过, 如果我们期待的结果是这样的, 可能就没办法采取以上模式了: 我们不希望 `step` 变化引起副作用函数的销毁和重新创建, 那么应该怎么样才能把 `step` 从副作用函数的依赖数组中删除呢?
 
-**当我们遇到这样的场景, state 中的某个值依赖 state 中的另一个值, 可以考虑使用 `useReducer` 来达到更新状态的目的.**
+**当我们遇到这样的场景: state 中的某个值依赖 state 中的另一个值, 可以考虑使用 `useReducer` 来达到更新状态的目的.**
 
-当你发现你写的设置状态相关的代码变成如下这样的时候: `setSomething(something => ...)`, 就可以开始考虑使用 reducer 了. reducer 能够帮助我们: <mark>decouple expressing the “actions” that happened in your component from how the state updates in response to them.</mark>
+当你发现你写的设置状态相关的代码变成如下这样的时候: `setSomething(something => ...)`, 就可以开始考虑使用 reducer 了. reducer 能够帮助我们将组件内部表达 actions 的逻辑和状态更新的逻辑进行解耦. 
 
 现在用 `dispatch` 依赖来替换代码中的 `step` 依赖:
 
@@ -1055,7 +1052,7 @@ useEffect(() => {
 
 至此, 已经解决了我们的问题!
 
-_(你或许会在依赖数组中省去 `dispatch`, `setState`, 或者 `useRef` 这些函数, 因为它们始终不会变化, 确实是这样. 是否将它们写入依赖数组中都无所谓.)_
+_(你或许会在依赖数组中省去 `dispatch`, `setState`, 或者 `useRef` 这些函数, 因为它们始终不会变化, 确实是这样, 是否将它们写入依赖数组中都无所谓.)_
 
 `dispatch` 函数做的事情, 并不是读取副作用函数内部的 state, 而是分发一个 action, 描述*发生了什么*. 这样的方式使得副作用函数能够和 `step` 状态解耦. 我们的副作用函数其实并不在意我们如何更新状态. 它只是单纯地告诉我们*发生了什么*. reducer 函数, 则只关注状态更新的逻辑:
 
@@ -1112,13 +1109,13 @@ function Counter({ step }) {
 }
 ```
 
-不过这种模式有个问题, 采取这种模式之后, 我们就无法进行一些必要的优化. 比较好的一点是, 在必要情况下, reducer 函数中能够任意读取所需的 props. (这里是[代码示例](https://codesandbox.io/s/7ypm405o8q).)
+但是这种模式有个问题, 采取这种模式之后, 我们就无法进行一些必要的优化. 比较好的一点是, 在必要情况下, reducer 函数中能够任意读取所需的 props. (这里是[代码示例](https://codesandbox.io/s/7ypm405o8q).)
 
 **即使是在这样的情况下, 我们的 `dispatch` 函数依然能够保证在组件多次渲染的过程中始终保持不变.** 因此在依赖项数组中忽略这个函数是完全合理的, 它不会引起副作用函数的重新执行.
 
-你或许会对这种模式的底层原理感到好奇. How can the reducer “know” props when called from inside an effect that belongs to another render? 这是因为当你调用 `dispatch` 的时候, React 会记住这个 action, 然后在下一次渲染的时候 _调用_ reducer. 此时, 最新的 props 就处于渲染的作用域中了, and you won’t be inside an effect. 
+你或许会对这种模式的底层原理感到好奇. 当我们在一个副作用函数中使用 reducer 的时候, 它是怎么"知道"另一次渲染时的 props 的呢? 这是因为当你调用 `dispatch` 的时候, React 会记住这个 action, 然后在下一次渲染的时候 _调用_ reducer. 此时, 最新的 props 就处于渲染的作用域中了, <mark>and you won’t be inside an effect. </mark>
 
-**这也是我倾向于将 `useReducer` 看作 Hooks 的"欺骗模式"的原因. 使用 `useReducer`, 我们能够将状态更新的逻辑和描述发生了什么的逻辑进行解耦. 同时帮助我们在依赖项数组中删除不必要的依赖, 避免不必要的副作用重新创建逻辑, 优化应用的性能.**
+**这也是我倾向于将 `useReducer` 看作 Hooks 的"欺骗模式"的原因. 使用 `useReducer`, 我们能够将状态更新的逻辑和描述发生了什么的逻辑进行解耦. 同时帮助我们在依赖项数组中删除不必要的依赖, 避免不必要的副作用重新执行, 优化应用的性能.**
 
 ### 将函数移动到副作用内部
 
@@ -1145,7 +1142,7 @@ function SearchResults() {
 
 ([代码示例](https://codesandbox.io/s/8j4ykjyv0) 来自于 _Robin Wieruch_ 的[文章](https://www.robinwieruch.de/react-hooks-fetch-data))
 
-代码实际上是有作用的. **但问题是, 简单地省略内部函数依赖, 当组件的规模变大之后, 我们会难以辨别是否覆盖了所有情况!**
+代码实际上是有作用的. **但问题是, 简单地省略内部函数依赖, 当组件的规模变大之后, 我们会很难发现代码是否覆盖了所有情况.**
 
 假设我们的代码变成如下这样, 每一个函数变为原来的五倍规模:
 
@@ -1196,9 +1193,11 @@ function SearchResults() {
 }
 ```
 
-如果我们忘了更新数组的依赖项, 遗漏了某些方法的话, 副作用函数就很可能无法正确同步 props 和 state 中的某些值. 引起一些 bug.
+如果我们忘了更新数组的依赖项, 遗漏了某些方法的话, 副作用函数就很可能无法准确同步 props 和 state 中的某些值. 引起一些 bug.
 
-不过幸运的是, 有个简单的解决办法. **如果我们只在副作用函数内使用到相关的函数, 可以直接将函数移到副作用函数内部:**
+不过幸运的是, 有个简单的解决办法. **如果我们只在副作用函数内用到相关的函数, 可以直接将函数移到副作用函数内部:**
+
+MARK
 
 ```jsx
 function SearchResults() {

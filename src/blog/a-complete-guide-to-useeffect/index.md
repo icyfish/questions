@@ -9,7 +9,7 @@ description: "A Complete Guide to useEffect"
 
 原文: [A Complete Guide to useEffect](https://overreacted.io/a-complete-guide-to-useeffect/)
 
-- [ ] 完善一些不理解的段落
+- [ ] 完善一些不好翻译的段落(橙色高亮标注)
 - [ ] TLDR部分
 ## 正文
 ### 每次渲染都有自己的 Props 和 State

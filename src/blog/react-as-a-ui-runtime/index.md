@@ -1,8 +1,8 @@
 ---
 title: React 作为 UI 运行时
-date: "2021-05-28"
+date: "2021-07-02"
 template: "post"
-draft: true
+draft: false
 toc: true
 category: "React"
 tags:
@@ -18,7 +18,7 @@ description: "React as a UI Runtime"
 
 ![](./react.png)
 
-对于 UI 设计的挑战, 我之前写过一篇[文章](https://overreacted.io/the-elements-of-ui-engineering/) . 这篇文章和之前的文章有点区别, 从一个完全不同的角度来看待 React, 本文认为 React 是一个[编程运行时](https://en.wikipedia.org/wiki/Runtime_system).
+对于 UI 设计的挑战, 我之前写过一篇[文章](https://overreacted.io/the-elements-of-ui-engineering/). 这篇文章和之前的文章有点区别, 从一个完全不同的角度来看待 React, 本文认为 React 是一个[编程运行时](https://en.wikipedia.org/wiki/Runtime_system).
 
 **这篇文章不会教你任何创建 UI 有关的知识.** 不过阅读了本文之后, 能够帮助你更深刻地理解 React 的编程模型.
 
@@ -26,9 +26,9 @@ description: "React as a UI Runtime"
 
 如果你目前正在学习 React, 那么你不是本文的目标读者, 可以先去查看[官方文档](https://reactjs.org/docs/getting-started.html#learn-react).
 
-**本文是深入探讨 React 的文章, 因此初学者不适合阅读这篇文章.** 在这篇文章中, 我会从最基本原理(first principles)的角度介绍一些 React 的编程模型. 我不会教你如何使用, 只会说明具体的原理.
+**本文是深入探讨 React 的文章, 因此初学者不适合阅读这篇文章.** 在这篇文章中, 我会从最基本原理(first principles)的角度介绍 React 的编程模型中的大部分概念. 我不会教你如何使用, 只会说明具体的原理.
 
-**许多有多年 React 开发经验的开发者, 可能也没有对这些话题有深入的思考.** 本文针对 React 的探讨角度, 更偏向于编程角度而非[设计师的角度](https://mrmrs.cc/writing/developing-ui/) . 当然两者都了解是再好不过的.
+**许多有多年 React 开发经验的开发者, 可能也没有对这些话题有深入的思考.** 本文针对 React 的探讨角度, 更偏向于编程角度而非[设计师的角度](https://mrmrs.cc/writing/developing-ui/). 当然两者都了解是再好不过的.
 
 接下来开始我们的正文.
 
@@ -38,29 +38,29 @@ description: "React as a UI Runtime"
 
 有些程序输出数字, 有些程序输出诗篇. 不同的语言以及它们对应的运行时经常会针对某些特定场景做出一些适合该场景的优化. React 也不例外.
 
-React 程序**输出"树"结构, 这棵树会实时变化.** 它可以是[DOM 树](https://www.npmjs.com/package/react-dom), [IOS 中的结构树](https://developer.apple.com/library/archive/documentation/General/Conceptual/Devpedia-CocoaApp/View%20Hierarchy.html), [PDF 原始类型的树](https://react-pdf.org/), 甚至是 [JSON 对象](https://reactjs.org/docs/test-renderer.html) . 通常我们会依赖这些树结构来呈现一些 UI. 后面我们会把他们叫做宿主树. 因为它们属于 React 之外的宿主环境的一部分, 像 DOM 和 iOS 都是宿主环境. 宿主树有属于[他们](https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild)[自己](https://developer.apple.com/documentation/uikit/uiview/1622616-addsubview)的关键 API. React 属于另一层的实现.
+React 程序**输出"树"结构, 这棵树会实时变化.** 它可以是[DOM 树](https://www.npmjs.com/package/react-dom), [IOS 中的结构树](https://developer.apple.com/library/archive/documentation/General/Conceptual/Devpedia-CocoaApp/View%20Hierarchy.html), [PDF 原始类型的树](https://react-pdf.org/), 甚至是 [JSON 对象](https://reactjs.org/docs/test-renderer.html). 通常我们会依赖这些树结构来呈现一些 UI. 后面我们会把它们叫做宿主树. 因为它们属于 React 之外的宿主环境的一部分, 像 DOM 和 iOS 都是宿主环境. 宿主树有属于[它们](https://developer.mozilla.org/en-US/docs/Web/API/Node/appendChild)[自己](https://developer.apple.com/documentation/uikit/uiview/1622616-addsubview)的关键 API. React 属于另一层的实现.
 
-那么 React 是做什么的呢? 抽象地来说, 它会帮助你构造并控制你的程序所需要的宿主树, 针对外部的事件, 比如用户交互, 网络响应, 计时器等, 做出对应的处理.
+那么 React 是做什么的呢? 抽象地来说, 它会帮助你构造并控制你的程序所需要的宿主树, 并且针对外部的事件, 比如用户交互, 网络响应, 计时器等, 做出对应的处理.
 
-在某些场景下, 一个具有特定功能的工具会比功能广泛的工具更好用, 因为可以从一些特定功能中收获一些益处. React 的其中两个实现理念, 就在这方面做出了一些有挑战性的尝试:
+在某些场景下, 一个具有特定功能的工具会比功能广泛的工具更好用, 因为可以从一些特定功能中收获一些好处. React 中的两个实现理念, 就在这方面做出了一些有挑战性的尝试:
 
-**稳定性.** 宿主树会始终保持相对稳定. 所有的更新都不会引起整体结构的根本性变化. 如果一个程序每隔一秒就重新组织它可交互的部分, 那么这个程序就会很难用. 你可能会遇到按钮突然消失, 屏幕抖动等各种影响体验的问题.
+**稳定性.** 宿主树会始终保持相对稳定. 并且大部分更新不会引起整体结构的根本性变化. 如果一个程序每隔一秒就重新组织所有可交互的部分, 那么这个程序就会很难用. 你可能会遇到按钮突然消失, 屏幕抖动等各种影响体验的问题.
 
-**规律性.** 宿主树能够被拆解成对应的 UI 模式, 并且他们是一一对应且行为一致的. The host tree can be broken down into UI patterns that look and behave consistently (such as buttons, lists, avatars) rather than random shapes.
+**规律性.** 宿主树能够被拆解成对应的 UI 模式, 并且它们是一一对应且行为一致的.
 
-**以上的这两个原则, 正好对于大部分 UI 来说, 也是适用的.** 但是当程序的输出并非一个稳定"模式"时, React 就不适合用于构建这样的程序. 比如, React 能够构建一个推特客户端, 但是构建 3D 管道的屏幕保护程序, 就不太合适了.
+**以上的这两个原则, 正好对于大部分 UI 来说, 也是适用的.** 但是当需要实现的程序并非输出一个稳定"形态"时, React 就不适用于构建这样的程序. 比如, React 适合构建推特客户端, 但是构建 3D 管道的屏幕保护程序, 就不太合适.
 
 ### 宿主实例
 
 宿主树由各个节点组成. 我们把这些节点叫做"宿主实例".
 
-在 DOM 作为宿主树的场景下, 宿主示例就是普通的 DOM 的节点 — j 节点就是当你调用 `document.createElement('div')` 所产生的那部分东西. 在 iOS 中, host instances could be values uniquely identifying a native view from JavaScript.
+在 DOM 作为宿主树的场景下, 宿主实例就是普通的 DOM 节点 — 节点就是当你调用 `document.createElement('div')` 所生成产生的那部分对象. 在 iOS 中, 宿主实例则是表达 native 原生视图的一个 JavaScript 对象.
 
 宿主实例有他们各自的属性(比如 `domNode.className` 或 `view.tintColor` ). 实例本身也可能包含其他实例(子节点).
 
 (这些部分跟 React 完全没有关系, 都是宿主环境中的概念)
 
-通常来说, 宿主环境都会提供一些 API 用以操作宿主示例, 这些 API 的包括: `appendChild`, `removeChild`, `setAttribute` 等. 在 React 应用中, 你通常不需要手动调用这些 API. 这些工作是由 React 完成的.
+通常来说, 宿主环境都会提供一些 API 用以操作宿主示例, 这些 API 包括: `appendChild`, `removeChild`, `setAttribute` 等. 在 React 应用中, 你通常不需要手动调用这些 API. 这些工作是由 React 完成的.
 
 ### 渲染器
 
@@ -70,26 +70,26 @@ React 渲染器能够在两种不同的模式下工作.
 
 大部分渲染器使用的是可变(mutating)的模式. 这也是 DOM 采取的模式: 我们能够创建节点, 设置节点的属性, 从节点中添加或者删除子节点. 在这种模式下宿主实例是可变的.
 
-React 同样能够在另一种[持久(persistent)](https://en.wikipedia.org/wiki/Persistent_data_structure)模式下工作. 在这个模式下, 宿主实例没有提供任何类似 `appendChild()` 之类的 API, 对于每次修改, 都会克隆整体的父节点树, 然后替换最顶层的子节点. 由于宿主树的不可变特性使得多线程的实现变得更容易. [React Fabric](https://reactnative.dev/blog/2018/06/14/state-of-react-native-2018)就利用了这一特性.
+React 同样能够在另一种[持久(persistent)](https://en.wikipedia.org/wiki/Persistent_data_structure)模式下工作. 在这个模式下, 宿主实例没有提供任何类似 `appendChild()` 之类的 API, 对于每次修改, 都会克隆整体的父节点树, 然后替换最顶层的子节点. 由于宿主树的不可变特性使得多线程的实现变得更容易. [React Fabric](https://reactnative.dev/blog/2018/06/14/state-of-react-native-2018)使用的就是这种模式.
 
-作为一个 React 用户, 正常来说不需要去思考这些模式. 我只是想要突出这一点: React 并不仅仅是一个简单的适配器而已. Its usefulness is orthogonal to the target low-level view API paradigm.
+作为一个 React 用户, 正常来说不需要去思考这些模式. 我只是想要突出这一点: React 并不仅仅是一个简单的适配器而已. <mark>Its usefulness is orthogonal to the target low-level view API paradigm.</mark>
 
 ### React 元素
 
-在宿主环境下, 一个宿主实例(比如 DOM 元素)是最小的构建单元. 在 React 中, 最小的构建单元则是 _React element_ (React 元素).
+在宿主环境下, 一个宿主实例(比如 DOM 元素)是最小的构建单元. 在 React 中, 最小的构建单元则是 _React 元素(element)_.
 
 一个 React 元素仅仅是一个普通的 JavaScript 对象. 它能够 _描述_ 一个宿主实例.
 
 ```js
 // JSX 是以下对象的语法糖
-// <button className="blue" />
+// JSX 描述: <button className="blue" />
 {
   type: 'button',
   props: { className: 'blue' }
 }
 ```
 
-React 元素十分轻量, 并且它本身和宿主实例没有关系. 再重申一遍, 它仅仅只是你想要在屏幕中所看到内容的一个表达形式.
+React 元素十分轻量, 并且它本身和宿主实例没有关联. 再重申一遍, 它仅仅只是你想要在屏幕中所看到内容的一个表达形式.
 
 和宿主实例一样, React 元素是构建树的最小单元.
 
@@ -113,11 +113,11 @@ React 元素十分轻量, 并且它本身和宿主实例没有关系. 再重申�
 }
 ```
 
-(注意: 我省略了一些对于教学目的没有帮助的[属性](https://overreacted.io/why-do-react-elements-have-typeof-property/))
+_(注意: 我省略了一些对于教学目的没有帮助的[属性](https://overreacted.io/why-do-react-elements-have-typeof-property/))_
 
-不过, 我们要记住一点, **React 元素没有它们自己能够持久化的签名.** 这意味着, 它们会经历不断地被移除和重新创建的过程.
+不过, 我们要记住一点, **React 元素没有属于自身的持久化签名.** 这意味着, 它们会不断经历被移除和重新创建的过程.
 
-React 元素是不可变的. 举个例子, 我们不能够修改元素的子节点或者是元素的属性. 如果在下一次渲染中你希望展示不同的内容. 就需要创建一个全新的 React 元素树来表达你想要的内容.
+React 元素是不可变 (immutable) 的. 举个例子, 我们不能够修改元素的子节点或者是元素的属性. 如果在下一次渲染中你希望展示不同的内容. 就需要创建一个全新的 React 元素树来表达你想要的内容.
 
 我倾向于将 React 元素看作是电影中的每一帧. 它们记录了在某个时间点, UI 应该以怎样的形式呈现. 每一帧的内容本身, 始终是不会变的.
 
@@ -135,29 +135,33 @@ ReactDOM.render(
 )
 ```
 
-`ReactDOM.render(reactElement, domContainer)` 这段代码表达的意思是: "React, 在宿主树 `domContainer` 中渲染我的 `reactElement.`
+`ReactDOM.render(reactElement, domContainer)` 这段代码表达的意思是: "React, 在宿主树 `domContainer` 中渲染我的 `reactElement`."
 
 在此之后, React 就会去确认 `reactElement.type` (需要渲染的元素的类型) 的值是什么(在我们的例子中, 这个值是 `button`). 然后 React 再告诉 React DOM 渲染器去创建一个宿主实例并设置对应的属性.
 
 ```js
 // ReactDOM renderer 渲染器做的事情(简化版本)
 function createHostInstance(reactElement) {
+  // highlight-start
   let domNode = document.createElement(reactElement.type)
   domNode.className = reactElement.props.className
+  // highlight-end
   return domNode
 }
 ```
 
-在我们的例子中, React 做的是这些工作:
+在我们的例子中, React 做的是这些事情:
 
 ```js
+// highlight-start
 let domNode = document.createElement("button")
 domNode.className = "blue"
+// highlight-end
 
 domContainer.appendChild(domNode)
 ```
 
-如果 React 元素存在子元素(`reactElement.props.children`)的话, 在首次渲染时, 就会递归地创建宿主实例.
+如果 React 元素(`reactElement.props.children`)存在子元素的话, 在首次渲染时, 就会递归地创建宿主实例.
 
 ## 协调 Reconciliation
 
@@ -165,18 +169,20 @@ domContainer.appendChild(domNode)
 
 ```jsx
 ReactDOM.render(
+  // highlight-next-line
   <button className="blue" />,
   document.getElementById("container")
 )
 
 // 是会完全替换宿主实例, 还是仅仅修改一个属性呢?
 ReactDOM.render(
+  // highlight-next-line
   <button className="red" />,
   document.getElementById("container")
 )
 ```
 
-这里想要再强调一次, React 的工作是使得宿主树的内容匹配 React 元素树的内容. 在接受到新的内容之后, 处理宿主实例树的过程叫做[协调(reconciliation)](https://reactjs.org/docs/reconciliation.html).
+这里要再强调一次, React 的工作是使得宿主树的内容匹配 React 元素树的内容. 在接受到新的内容之后, 处理宿主实例树的过程叫做[协调(reconciliation)](https://reactjs.org/docs/reconciliation.html).
 
 针对我们以上的代码示例, React 可以有两种方式进行处理, 简单的方式就是移除当前存在的整棵树, 然后重新创建一棵用户需要的树:
 
@@ -198,9 +204,9 @@ let domNode = domContainer.firstChild
 domNode.className = "red"
 ```
 
-也就是说, React 承担了这样的任务, 决定何时应该更新已有宿主实例, 何时应该创建一个新的宿主实例.
+也就是说, React 做了这样的工作, 决定何时应该更新已有宿主实例, 何时应该创建一个新的宿主实例.
 
-这就引发了一个问题: 如何区分函数实例. React 元素或许每一次都是不同的, 但是函数实例可能是会被复用的.
+这就引发了一个问题: 如何区分函数实例. React 元素或许每一次都是不同的, 但是函数实例是可能会被复用的.
 
 在我们的例子中, 很简单. 我们首先渲染了一个 `<button/>` 作为元素的子节点. 第二次依然是一个 `<button/>`, 唯一的区别是属性变了, 因此我们完全没有必要重新创建一个宿主实例. 直接复用就可以.
 
@@ -218,15 +224,17 @@ ReactDOM.render(
   <button className="blue" />,
   document.getElementById("container")
 )
-
+// highlight-start
 // 确认是否可以复用宿主实例? 可以 (因为前后两次都是 button )
 // 于是复用实例, 直接修改属性 domNode.className = 'red';
+// highlight-end
 ReactDOM.render(
   <button className="red" />,
   document.getElementById("container")
 )
-
+// highlight-start
 // 确认是否可以复用宿主实例? 不可以 (因为前后两次不一致 button → p)
+// highlight-end
 // 于是删除原有的实例, 重新创建一个新的实例
 // domContainer.removeChild(domNode);
 // domNode = document.createElement('p');
@@ -234,8 +242,10 @@ ReactDOM.render(
 // domContainer.appendChild(domNode);
 ReactDOM.render(<p>Hello</p>, document.getElementById("container"))
 
+// highlight-start
 // 确认是否可以复用宿主实例? 可以 (因为前后两次都是 p )
 // domNode.textContent = 'Goodbye';
+// highlight-end
 ReactDOM.render(<p>Goodbye</p>, document.getElementById("container"))
 ```
 
@@ -274,7 +284,9 @@ ReactDOM.render(
   - `input → p`: 是否可以复用原有的宿主实例? **不可以, 因为类型已经改变了!** 需要把当前的 `input` 元素删除然后创建一个新的 `p` 宿主实例.
   - `(nothing) → input`: 需要创建一个新的类型为: input 的宿主实例.
 
-以上更新的过程, 由代码呈现就是这样的:
+MARK
+
+以上更新的过程, 由代码呈现是这样的:
 
 ```jsx
 // highlight-start

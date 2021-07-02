@@ -9,6 +9,11 @@ body {
   font-family: var(--font);
 }
 
+::selection {
+  background-color: var(--body-color);
+  color: #fff;
+}
+
 body.light {
   --bg: #ffffff;
   --bg-secondary: rgb(249, 250, 251);

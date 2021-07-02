@@ -1,6 +1,6 @@
 ---
 title: 理解 useEffect
-date: "2021-06-08"
+date: "2021-07-02"
 template: "post"
 draft: false
 toc: true
@@ -8,6 +8,10 @@ description: "A Complete Guide to useEffect"
 ---
 
 原文: [A Complete Guide to useEffect](https://overreacted.io/a-complete-guide-to-useeffect/)
+
+- [ ] 完善一些不理解的段落
+- [ ] TLDR部分
+## 正文
 ### 每次渲染都有自己的 Props 和 State
 
 开始聊 effect 之前, 我们先开始聊一聊组件的渲染.
@@ -1197,8 +1201,6 @@ function SearchResults() {
 
 不过幸运的是, 有个简单的解决办法. **如果我们只在副作用函数内用到相关的函数, 可以直接将函数移到副作用函数内部:**
 
-MARK
-
 ```jsx
 function SearchResults() {
   // ...
@@ -1222,9 +1224,9 @@ function SearchResults() {
 
 (这里是代码[示例](https://codesandbox.io/s/04kp3jwwql))
 
-这样的方式有什么好处呢? 我们不再需要思考 <mark> “transitive dependencies” </mark>. 依赖参数数组也不会再欺骗 React: **因为我们没有使用任何副作用函数外部的值.**
+这样的方式有什么好处呢? 我们不再需要考虑 <mark> “transitive dependencies” </mark>. 依赖参数数组也不会再欺骗 React: **因为我们没有使用任何副作用函数外部的值.**
 
-如果后续更新了 `getFetchUrl` 方法, 使用 `state` 中的 `query` 值, 就会注意到我们正在编辑副作用函数*内部*的内容, 而这部分内容依赖一个外部的值 -- 因此我们需要在依赖参数中添加 `query`:
+如果后续更新 `getFetchUrl` 方法: 内部使用 `state` 中的 `query` 值, 就会注意到我们正在编辑副作用函数*内部*的内容依赖一个外部的值 -- 因此我们需要在依赖参数中添加 `query`:
 
 ```jsx
 function SearchResults() {
@@ -1251,9 +1253,9 @@ function SearchResults() {
 
 (代码[示例](https://codesandbox.io/s/pwm32zx7z7))
 
-添加这项依赖的行为, 并不是单纯安抚 React 而已, 这样修改之后, 当 `query` 变化的情况下, 应用就会重新请求数据. **`useEffect` 的设计强制要求开发者关注应用中数据流的变化情况, 并据此选择我们的副作用函数应该如何根据变化做出对应的同步, 而不是忽略数据流的变化, 等到用户发现 bug 之后才开始关注对应的逻辑.**
+添加这项依赖的行为, 并不是单纯安抚 React 而已, 这样修改之后, 当 `query` 变化的情况下, 应用就会重新请求数据. **`useEffect` 的设计强制要求开发者关注应用中数据流的变化情况, 并据此选择我们的副作用函数应该如何根据变化做出对应的同步, 而不是忽略数据流的变化, 等到用户发现 bug 之后才开始关注相关的逻辑.**
 
-开发者在开发过程中可以使用 `eslint-plugin-react-hooks` 插件, 并开启对应的代码规范提示规则: `exhaustive-deps`, 这个插件会[分析代码中的副作用函数](https://github.com/facebook/react/issues/14920), 如果副作用函数的实现存在缺陷, 插件就会抛出对应的提示. 换句话说, 这个工具会在我们的组件没有正确处理数据流的情况下, 给我们提示. 十分贴心.
+开发者在开发过程中可以使用 `eslint-plugin-react-hooks` 插件, 并开启对应的代码规范提示规则: `exhaustive-deps`, 这个插件会[分析代码中的副作用函数](https://github.com/facebook/react/issues/14920), 如果副作用函数的实现存在缺陷, 插件就会抛出对应的提示. 也就是说, 这个工具会在我们的组件没有正确处理数据流的情况下给我们提示.
 
 ![](./exhaustive-deps.gif)
 
@@ -1287,7 +1289,7 @@ function SearchResults() {
 
 在上面的示例中, 我们不会将 `getFetchUrl` 方法移动到副作用函数的内部, 因为如果这样的话, 副作用函数就无法共享 `getFetchUrl` 方法.
 
-另一方面, 因为我们要对依赖项数组始终保持诚实, 就会遇到另一个问题. 由于我们的两个副作用函数都依赖 `getFetchUrl` (**每一次渲染都有所差异**), 如果传递了 `getFetchUrl`, 依赖项数组就基本上没什么用了, 因此每次渲染, 副作用函数都会重新执行:
+另一方面, 因为我们要对依赖项数组始终保持诚实, 就会遇到另一个问题. 由于我们的两个副作用函数都依赖 `getFetchUrl` (**每一次渲染都有所差异**), 如果传递了 `getFetchUrl`, 依赖项数组就基本上没什么用了: 因为每次渲染, 副作用函数都会重新执行:
 
 ```jsx
 function SearchResults() {
@@ -1310,11 +1312,11 @@ function SearchResults() {
 }
 ```
 
-为了解决这个问题, 可以考虑在依赖项数组中直接省略 `getFetchUrl` 这个依赖. 但这并不是一个好的解决方案, 当我们要修改组件中的数据流的时候, 如果副作用函数消费了相关数据, 就会引起一些奇奇怪怪的问题. 比如我们先前碰到的, 间隔(interval)函数不更新的 bug.
+为了解决这个问题, 可以考虑在依赖项数组中直接省略 `getFetchUrl`. 但这并不是一个好的解决方案, 当我们要修改组件中的数据流的时候, 如果副作用函数消费了相关数据, 就会引起一些奇奇怪怪的问题. 比如我们先前碰到的, 间隔(interval)函数不更新的 bug.
 
 其实还有其他更简单的解决方案.
 
-**第一个方案是, 如果一个函数没有消费组件作用域内的值, 可以将函数移到组件外部, 由于函数不会因为渲染产生变化, 我们就不必在副作用函数中声明这个函数:**
+**第一个方案是, 如果一个函数没有消费组件作用域内的值, 可以将函数移到组件外部, 由于移到外部的函数不会因为渲染产生变化, 我们就不必在副作用函数中声明这个函数:**
 
 ```jsx
 // highlight-start
@@ -1339,7 +1341,7 @@ function SearchResults() {
 }
 ```
 
-因为 `getFetchUrl` 并不存在于渲染阶段的作用域中, 也不会被组件数据流的变化影响, 我们就没有必要在依赖参数中声明它. 因为这个函数不可能因为 props 或者 state 的变化而产生变化.
+`getFetchUrl` 并不存在于渲染阶段的作用域中, 也不会被组件数据流的变化影响, 我们就没有必要在依赖参数中声明它: 这个函数不可能因为 props 或者 state 的变化而产生变化.
 
 还有一个方法就是, 将函数用 [`useCallback` Hook](https://reactjs.org/docs/hooks-reference.html#usecallback) 包裹起来:
 
@@ -1364,7 +1366,7 @@ function SearchResults() {
 }
 ```
 
-`useCallback` 所做的事情, 就像是给依赖参数检查加了另一层屏障. 从其他角度入手解决了问题 -- **不修改依赖参数的声明, 而是针对所依赖的值本身做文章, 确保它只在必要的时候发生变化.**
+`useCallback` 所做的事情, 就像是给依赖参数检查加了另一层屏障. 从另一个角度入手解决了我们目前需要解决的问题 -- **不修改依赖参数的声明, 而是针对所依赖的值本身做文章, 确保它只在必要的时候发生变化.**
 
 为什么这样的方式是有用的呢. 之前的两个例子中展示了针对 `'react'` 和 `'redux'` 的两个搜索结果. 如果我们现在希望加入一个输入框, 以供用户输入任意的 `query` 参数执行搜索. 这样一来, `getFetchUrl` 就需要从组件内部的作用域 state 中读取一些值.
 
@@ -1404,7 +1406,7 @@ function SearchResults() {
 
 因为使用了 `useCallback`, 如果 `query` 参数始终保持不变的话, `getFetchUrl` 也就不会有变化, 那么副作用函数也就不会重新执行. 如果 `query` 变化了, `getFetchUrl` 也会同时发生变化, 然后重新请求数据. 这就好像是当我们修改 Excel 中的某个单元格之后, 其他单元格中的数据如果依赖这个单元格的数据, 就会根据新的数据重新计算对应的结果.
 
-拥抱了数据流和同步的心智模型之后, 就自然会得到这样的结果. **同样的解决方式对于函数组件的 props 也一样奏效:**
+拥抱了数据流和同步的心智模型之后, 就自然会得到这样的结果. **同样的解决方式对于函数组件的 props 也一样有效:**
 
 ```jsx
 function Parent() {
@@ -1434,7 +1436,7 @@ function Child({ fetchData }) {
 
 ### 函数是数据流的一部分吗
 
-很有意思的是, 这种模式在函数式组件下就完全不适用了, 这也从另一方面体现出了副作用函数的心智模型和生命周期模式存在差异. 查看下面的对应类组件代码:
+很有意思的是, 这种模式在类式组件下就完全不适用了, 这也从另一方面体现出了副作用函数的心智模型和生命周期模式存在差异. 查看下面的对应类组件代码:
 
 ```jsx
 class Parent extends Component {
@@ -1467,7 +1469,7 @@ class Child extends Component {
 }
 ```
 
-你或许会认为: "我们都知道: `useEffect` 就像是 `componentDidMount` 和 `componentDidUpdate` 的结合体, 你不需要时时刻刻重申这个观点!" **但是实际上, 这个观点是错的, `useEffect` 无法完全模拟 `componentDidUpdate` 的行为**:
+你或许会想: "我们都已经知道: `useEffect` 就像是 `componentDidMount` 和 `componentDidUpdate` 的结合体, 不需要时时刻刻重申这个观点!" **但是实际上, 这个观点是错的, `useEffect` 无法完全模拟 `componentDidUpdate` 的行为**:
 
 ```jsx
 class Child extends Component {
@@ -1491,7 +1493,7 @@ class Child extends Component {
 }
 ```
 
-当然了, `fetchData` 是一个类方法!(也可以说是类的属性 -- 但是这并不能改变什么.) 即使 state 产生变化, 这个类方法也不会随之变化. 因此 `this.props.fetchData` 的值始终与 `prevProps.fetchData` 的值一致, 因此遇上代码中的情况永远不会发生. 那么我们可以直接移除这个条件判断吗?
+当然了, `fetchData` 是一个类方法!(也可以说是类的属性 -- 但是这并不能改变什么.) 即使 state 产生变化, 这个类方法也不会随之变化. 因此 `this.props.fetchData` 的值始终与 `prevProps.fetchData` 的值一致, 因此以上代码中的情况永远不会发生. 那么我们可以直接移除这个条件判断吗? 将代码修改为如下这样:
 
 ```jsx
  componentDidUpdate(prevProps) {
@@ -1499,7 +1501,7 @@ class Child extends Component {
   }
 ```
 
-并不可以, 如果我们修改代码为以上这样, 每一次重新渲染都会重新请求数据. (在组件树中添加一些动画会更直观地发现这个变化.) 那么将 `fetchData` 绑定到特定的 query 中, 会怎么样呢?
+并不可以, 如果我们这样修改代码的话, 每一次重新渲染都会重新请求数据. (在组件树中添加一些动画能够更直观地观察到这个变化.) 那么如果将 `fetchData` 绑定到特定的 query 中, 会怎么样呢?
 
 ```jsx
   render() {
@@ -1509,7 +1511,7 @@ class Child extends Component {
 
 这样修改之后, 即使 `query` 没有变化, `this.props.fetchData !== prevProps.fetchData` 的值也始终是 `true`. 因此始终会重新请求数据.
 
-对于这个问题, 唯一的解决方案是迎难而上, 将 `query` 参数本身传递到 `Child` 组件中. `Child` 组件实际上并不会使用 `query` 参数, 但是在 `query` 变化的时候, 需要依赖 `Child` 组件的重新渲染以发起数据的重新请求:
+对于这个问题, 唯一的解决方案是将 `query` 参数本身传递到 `Child` 组件中. `Child` 组件实际上并不会使用 `query` 参数, 但是在 `query` 变化的时候,  `Child` 组件需要重新渲染以发起数据的重新请求:
 
 ```jsx
 class Parent extends Component {
@@ -1546,9 +1548,9 @@ class Child extends Component {
 }
 ```
 
-很长一段时间, 我们使用的都是 React 类组件, 我很习惯于将一些不必要的 props 传递到组件中, and breaking encapsulation of parent components that I only realized a week ago why we had to do it.
+很长一段时间, 我们使用的都是 React 类组件, 我很习惯将一些不必要的 props 传递到组件中, 习惯破坏父组件的封装. 直到一周前我才知道, 为什么我们必须要这样做.
 
-**在类组件的场景下, 函数的 props 本身并不是数据流的一部分.** 组件的方法包裹了可变的 this, 因此它们的签名所表示的含义实际上没有一点保障. 所以, 即使我们需要的只是一个函数, 也得同时传递一些其他数据, 这样 React 才能够进行 "diff" 的操作. 同时, 我们无法知道从父组件中传递下来的 `this.props.fetchData` 本身是否依赖于某个 state 值, 这个值是否变化过.
+**在类组件的场景下, 函数的 props 本身并不是数据流的一部分.** 组件的方法包裹了可变的 `this`, 因此我们不能够太过依赖方法的签名. 所以, 即使我们需要的只是一个函数, 也得同时传递一些其他数据, 这样 React 才能够方便地进行 "diff" 的操作. 同时, 我们无法知道从父组件中传递下来的 `this.props.fetchData` 本身是否依赖于某个 state 值, 这个 state 值是否变化过.
 
 **使用 `useCallback` 之后, 函数就能够参与到数据流中了.** 如果函数接受的参数变化了, 那么函数本身也会变化, 否则就不会变化. 由于 `useCallback` 的功能足够完善, 属性的变化, 如 `props.fetchData` 也会传递下去.
 
@@ -1564,10 +1566,9 @@ function ColorPicker() {
 }
 ```
 
-**我想要重点声明的一点是, 如果对每一个函数都用 `useCallback` 包裹, 代码会显得十分笨重.** 有一种方式可以避免这种形式的代码, It’s a nice escape hatch and it’s useful when a function is both passed down and called from inside an effect in some children. Or if you’re trying to prevent breaking memoization of a child component. But Hooks lend themselves better to avoiding passing callbacks down altogether.
+**我想要重点声明的一点是, 如果对每一个函数都用 `useCallback` 包裹, 代码会显得十分笨重.** 有一种方式可以避免这种形式的代码, 当一个函数通过 props 传递, 并且在子组件内部被调用的时候, 这样的方式会很有用. 当你希望避免破坏子组件的缓存的时候, 这种方式也同样有用. <mark>But Hooks lend themselves better to avoiding passing callbacks down altogether.</mark>
 
-In the above examples, I’d much prefer if fetchData was either inside my effect (which itself could be extracted to a custom Hook) or a top-level import. I want to keep the effects simple, and callbacks in them don’t help that. (“What if some props.onComplete callback changes while the request was in flight?”) You can simulate the class behavior but that doesn’t solve race conditions.
-
+在上面的例子中, 我更偏向于希望 `fetchData` 在我的副作用函数中(抽出一个自定义的 Hook)或者在顶层的 `import` 中声明. 我希望副作用函数尽可能保持简单, 内部声明太多回调函数会增加副作用函数的复杂性. (“What if some `props.onComplete` callback changes while the request was in flight?”) 你可以[模拟类式组件的行为](https://overreacted.io/a-complete-guide-to-useeffect/#swimming-against-the-tide), 但是这并没有解决竞速场景的问题.
 ### 竞速场景
 
 以一个典型的数据请求场景作为示例:
@@ -1617,11 +1618,11 @@ class Article extends Component {
 
 这样的现象叫做: 竞速场景(Race Condition), 在存在 `async` / `await` 和数据流自上而下传递的代码中, 经常会发生这种情况(它假设了某些值会等待异步的结果, 但是代码执行到异步函数的中间时, props 或者 state 可能会发生变化.)
 
-虽然在你传递 `async` 函数到副作用函数中时, 会抛出一些警告信息, 但是副作用函数并没有能力解决这个问题. (之后我们会改进这个警告信息, 以披露出更多的信息, 告诉用户这样的使用方式会遇到的问题.)
+虽然在你传递 `async` 函数到副作用函数中时, 会抛出一些警告信息, 但是这仅仅是警告, 副作用函数并没有能力解决这个问题. (之后我们会改进这个警告, 以披露出更多有效信息, 告诉用户这样的使用方式会遇到的问题.)
 
-如果你使用的异步方法支持被取消的话, 可以在清除函数中取消这个异步操作, 以解决以上的问题.
+如果你使用的异步方法支持被取消的话, 可以在清除函数中取消这个异步操作, 来解决以上的问题.
 
-除了这种方式之外, 还有一个简单的方法: 利用一个标志来追踪请求是否被取消:
+除了这种方式之外, 还有一个简单的方法: 添加一个标志来追踪请求是否被取消:
 
 ```jsx
 function Article({ id }) {
@@ -1651,21 +1652,21 @@ function Article({ id }) {
 }
 ```
 
-[这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)详细阐释了你应该如何处理异常情况和加载的状态, 简单概括就是将这部分逻辑提取到一个自定义的 Hook 中. 如果你想要学习更多有关于如何使用 Hook 请求数据的内容的话, 可以阅读这篇文章.
+[这篇文章](https://www.robinwieruch.de/react-hooks-fetch-data)详细阐释了你应该如何处理异常情况和加载的状态, 简单概括就是将这部分逻辑提取到一个自定义的 Hook 中. 如果想要学习更多有关于如何使用 Hook 请求数据的内容的话, 可以阅读这篇文章.
 
-### 进阶的理解
+### 进一步深入
 
-在类组件生命周期的心智模型下, 副作用函数的行为和渲染的结果是有一定差异的. UI 的渲染由 props 和 state 的变化驱动, 并且会确保渲染结果与两者的变化始终保持一致. 但是在副作用的心智模型下, 情况就不是这样了. 对两者的混淆, 也经常会引起一些 bug.
+在类组件(生命周期)的心智模型下, 副作用函数的行为和渲染的结果有一定差异. UI 的渲染由 props 和 state 的变化驱动, 并且会确保渲染结果与两者的变化始终保持一致. 但是在副作用的心智模型下, 情况就不是这样了. 对两者的混淆, 也经常会引起一些 bug.
 
 在 `useEffect` 的心智模型下, 默认情况下所有场景都是同步的. 副作用函数变成了 React 数据流的一部分. 如果开发者对于每一个 `useEffect` 都正确处理的话, 组件也能够更好地处理极端情况.
 
 然而, 处理好 `useEffect` 的成本很大也很繁琐. 编写同步的代码, 处理极端情况, 比处理一次性的副作用(不严格与渲染的结果保持一致)难度大上很多.
 
-如果我们在日常开发中经常用到 `useEffect` 的话, 情况就会变得很繁琐. 幸运的是, `useEffect` 是一个较为底层的 API. 因为目前尚处于 Hooks 出现的早期阶段, 因此大家会比较经常使用它, 特别是在某些教程中. 随着时间的发展, 社区会出现更多高阶的 Hook API, 这样一来, `useEffect` 的使用场景就会变少了.
+如果我们在日常开发中经常用到 `useEffect` 的话, 情况就会变得很繁琐. 幸运的是, `useEffect` 是一个较为底层的 API. 因为目前尚处于 Hooks 出现的早期阶段, 因此大家会比较经常使用它, 特别是在某些教程中. 随着时间的发展, 社区会出现更多高阶的 Hooks API, 这样一来, `useEffect` 的使用场景就会变少.
 
-据我了解, 目前已经有许多应用, 实现了一些自己的 Hooks, 比如 `useFetch`, 除了基本功能之外, 还封装了一些鉴权逻辑. 比如 `useTheme`, 则是利用 context 实现了切换主题的功能. 一旦我们封装了类似的自定义 Hooks, 用到 `useEffect` 的场景, 自然也就变少了. 尽管 `useEffect` 上手比较复杂, 但是它的能力也为基于它实现的 Hooks 带来了很多好处.
+据我了解, 目前已经有许多应用, 实现了一些自己的 Hooks, 比如 `useFetch`, 除了基本功能之外, 还封装了一些鉴权逻辑. 比如 `useTheme`, 则是利用 context 实现了切换主题的功能. 一旦我们封装了类似的自定义 Hooks, 用到 `useEffect` 的场景, 自然也就变少了. 尽管 `useEffect` 上手比较复杂, 但是它的能力也为基于它实现的 Hooks 带来了很多便利.
 
-截止目前, `useEffect` 的大部分使用场景都是请求数据. But data fetching isn’t exactly a synchronization problem. This is especially obvious because our deps are often `[]`. What are we even synchronizing?
+截止目前, `useEffect` 的大部分使用场景都是请求数据. 但是实际上同步的特性对数据请求的场景并没有什么大影响, 特别是大部分数据请求的场景下, 我们的依赖参数经常是空数组: `[]`, 就更不会有太大的影响了. 那么同步的特性, 主要是用于影响什么的呢?
 
 从长远角度看, 专门用以请求数据的 [Suspense 特性](https://reactjs.org/blog/2018/11/27/react-16-roadmap.html#react-16x-mid-2019-the-one-with-suspense-for-data-fetching) 使得第三方库能够直接告诉 React 延迟渲染的流程, 直到某些异步的流程结束再开始渲染.
 

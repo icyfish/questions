@@ -284,8 +284,6 @@ ReactDOM.render(
   - `input → p`: 是否可以复用原有的宿主实例? **不可以, 因为类型已经改变了!** 需要把当前的 `input` 元素删除然后创建一个新的 `p` 宿主实例.
   - `(nothing) → input`: 需要创建一个新的类型为: input 的宿主实例.
 
-MARK
-
 以上更新的过程, 由代码呈现是这样的:
 
 ```jsx
@@ -306,9 +304,9 @@ dialogNode.appendChild(newInputNode)
 
 这并不是最佳的更新策略, 因为 `<input>` 并不是被 `<p>` 替换, 而仅仅是移了个位置. 我们不能够因此就将它整个删除.
 
-想要修复这个问题其实很简单(我们很快会讲到), 这种情况在 React 应用中其实出现得并不多. 探究一下其中的原因, 其实会觉得很有意思.
+想要修复这个问题其实很简单(后面很快会提到), 这种情况在 React 应用中出现得并不多. 不过探究一下其中的原因, 会觉得很有意思.
 
-在实际应用中, 我们几乎很少会直接调用 `ReactDOM.render` 来渲染页面, 我们会将程序进行抽象, 拆分成多个组件:
+在实际应用中, 我们几乎不会直接调用 `ReactDOM.render` 来渲染页面. 现在我们将程序进行抽象, 拆分成多个组件:
 
 ```jsx
 function Form({ showMessage }) {
@@ -325,7 +323,7 @@ function Form({ showMessage }) {
 }
 ```
 
-以上的例子并不会遇到我们先前所描述的那个问题. 我们用对象的形式表示组件, 而不是 JSX 的形式. 我们来看一看以上形式的 `dialog` 子组件树:
+以上的例子不会遇到我们先前所描述的那个问题. 现在开始用对象的形式, 而不是 JSX 的形式来表示上面的组件. 关注 `dialog` 子组件树:
 
 ```jsx
 function Form({ showMessage }) {
@@ -369,11 +367,11 @@ dialogNode.insertBefore(pNode, inputNode)
 
 ## 列表
 
-对比同一位置的元素类型, 在大部分情况下已经能够区分是否要复用或者重新创建对应的宿主实例了.
+在大部分情况下, 对比同一位置的元素类型就已经能够区分是否要复用或者重新创建对应的宿主实例了.
 
-可是只有当子节点位置是固定不变且不会被重新排序的时候, 我们上面的规则才会奏效. 在上面的例子中, 即使 `message` 的值可能不存在, 我们依然知道 input 是在 message 之后的, 并且 `Dialog` 下也不存在任何其他子节点.
+可是只有当子节点位置固定不变且不会被重新排序的时候, 上面的规则才会奏效. 在上面的例子中, 即使 `message` 的值可能不存在, 我们依然知道 input 是在 message 之后的, 并且 `Dialog` 下也不存在任何其他子节点.
 
-而对于动态的列表, 情况就不一样了, 我们无法确保顺序是始终一致的.
+而对于动态的列表, 情况就不一样了, 我们无法确保顺序始终一致.
 
 ```jsx
 function ShoppingList({ list }) {
@@ -404,9 +402,10 @@ for (let i = 0; i < 10; i++) {
 ```
 
 React 并没有将它们进行重新排序, 而是更新了每一个节点的内容.
-这无疑会引起很大的性能问题和 bug . 举例来说, 排序之后第一次输入的内容的状态始终会被保留 -- 可是实际上, 它所关联的产品应该已经和上一次完全不一样了!
 
-**这也是为什么 React 强制用户针对每一个列表声明一个特殊的属性 `key` 的原因:**
+这无疑会引起很大的性能问题和系统 bug. 举例来说, 排序之后第一次输入的内容的状态始终会被保留 -- 可是实际上, 它所关联的产品已经和上一次完全不一样了!
+
+**这也是为什么 React 强制用户针对每一个列表声明一个特殊的属性 `key`**
 
 ```jsx
 function ShoppingList({ list }) {
@@ -454,13 +453,13 @@ function Form({ showMessage }) {
 }
 ```
 
-我们把这类函数叫做组件. 我们使用组件来创建 UI 的各个组成部分, 组件对于 React 来说, 就是面包和黄油.
+我们把这类函数叫做组件. 我们使用组件来创建 UI 的各个组成部分, 组件对于 React 来说, 就是面包和黄油(不可或缺).
 
-组件接受一个参数 -- 对象哈希值. 这个对象包含了组件所需要的各个属性(props). 在我们上面的例子中, `showMessage` 就是一个属性. 属性和具名参数很相似.
+组件接受一个参数 -- 对象. 这个对象包含了组件所需要的各个属性(props). 在我们上面的例子中, `showMessage` 就是一个属性. 属性和具名参数很像.
 
-## Purity
+## 纯粹性 Purity
 
-React 组件是一个纯函数, 我们不能够在组件内部修改所传入的属性.
+对于 props, React 组件是一个纯函数, 我们不能够在组件内部修改所传入的属性.
 
 ```jsx
 function Button(props) {
@@ -469,9 +468,9 @@ function Button(props) {
 }
 ```
 
-通常情况下, React 不支持可变. (后面我们会提到, 对于不同的事件, 应该做出怎样的合适的响应.)
+通常情况下, React 不支持可变. (后面我们会提到, 对于不同的事件, UI 是如何做出合适的响应的.)
 
-不过, 在组件内部实现可变, 是可以接受的:
+不过, 在组件内部是接受可变的:
 
 ```jsx
 function FriendList({ friends }) {
@@ -486,9 +485,9 @@ function FriendList({ friends }) {
 }
 ```
 
-在 `FriendList` 中, 我们通过循环遍历在 `items` 中插入新的 `Friend` 组件, 这种操作完全不影响其他组件. 在组件渲染之前, 可变操作是合理的, 没有必要刻意避免这种操作.
+在 `FriendList` 中, 我们通过循环遍历的操作在 `items` 中插入新的 `Friend` 组件, 这种操作完全不影响其他组件. 在组件渲染之前, 可变操作是合理的, 没有必要刻意避免这种操作.
 
-同样的, 延迟初始化的操作也是能够被接受的, 尽管这种操作本质上并不"纯".
+同样的, 延迟初始化的操作也是能够被接受的, 尽管这种操作本质上并不"纯粹".
 
 ```jsx
 function ExpenseForm() {
@@ -499,9 +498,11 @@ function ExpenseForm() {
 }
 ```
 
-有时候, 我们可能会多次调用同一个组件, 但是只要不影响其他组件的渲染, 这种操作就是安全的. React 不会强制要求组件 100% 纯粹(pure, 函数式变成中的术语). 对于 React 来说, [幂等性](https://stackoverflow.com/questions/1077412/what-is-an-idempotent-operation)比纯粹性更加重要.
+有时候, 我们可能会多次调用同一个组件, 但是只要不影响其他组件的渲染, 这种操作就是安全的. React 不会强制要求组件 100% 纯粹(pure, 函数式编程中的术语). 对于 React 来说, [幂等性](https://stackoverflow.com/questions/1077412/what-is-an-idempotent-operation)比纯粹性更加重要. 
 
-也就是说, React 组件中不允许出现用户可见的副作用, 更实际一点的表述就是: 仅仅调用某个组件本身, 不能够引发屏幕上可感知的渲染结果改变.
+(译注: 幂等性指的是调用一次和调用多次产生的始终是同样的结果.)
+
+也就是说, React 组件中不允许出现用户可感知的副作用, 换句话说就是: 仅仅*调用*某个组件本身, 无法引发屏幕上可感知的渲染结果改变.
 
 ## 递归
 
@@ -514,7 +515,7 @@ ReactDOM.render(reactElement, domContainer)
 
 然而这种方式并不符合 React 的设计初衷, 我们不该在运行时创建组件.
 
-更合理的方式是, 用 React 元素的形式使用组件. **这意味着, 我们不能直接调用组件所对应的函数, 而是让 React 来负责调用的工作, 我们只需要声明即可:**
+更合理的方式是, 用 React 元素的形式使用组件. **这意味着, 我们不要去直接调用组件所对应的函数, 而是让 React 来负责调用的工作, 我们只做声明的工作:**
 
 ```jsx
 // { type: Form, props: { showMessage: true } }
@@ -531,18 +532,18 @@ let props = reactElement.props // { showMessage: true }
 let result = type(props) //  Form 函数 return 出的结果
 ```
 
-按照惯例, 我们应该把函数式组件声明为首字母大写. 这样的话, JSX 就不会把自定义组件 `Form` 认错为原生的 HTML 标签 `<form>`. 这样一来, 函数所对应的对象的 `type` 属性就可以是一个签名而非单纯的字符串:
+按照惯例, 我们应该把函数式组件声明为首字母大写. 这样的话, JSX 就不会把自定义组件 `Form` 认错为原生的 HTML 标签 `<form>`. 那么, 函数所对应的对象的 `type` 属性就可以是一个签名而非单纯的字符串:
 
 ```jsx
 console.log((<form />).type) // 'form' string
 console.log((<Form />).type) // Form function
 ```
 
-我们没有全局注册检查的机制, 当看到 `<Form/>` 组件的时候, 只是单纯地寻找对应的 `Form`. 如果没法找到 `Form` 的话, 就会抛出一个 JS 错误, 这类错误, 和生命了一个错误的变量名是同类的错误.
+我们没有全局注册检查的机制, 当看到 `<Form/>` 组件的时候, 只是单纯地寻找对应的 `Form`. 如果没法找到 `Form` 的话, 就会抛出一个 JS 错误, 这类错误, 和声明一个错误的变量名是同类的错误.
 
-**那么当 React 发现元素的类型是函数的时候, React 会做些什么呢? 它会调用你的函数组件, 从而得出需要渲染哪些组件的信息.**
+**那么当 React 发现元素的类型是函数的时候, 它会做些什么呢? 它会调用你的函数组件, 从而得出需要渲染哪些组件的信息.**
 
-这个操作在 React 内部递归地进行, 文档中有对相关概念详细的[解释](https://reactjs.org/blog/2015/12/18/react-components-elements-and-instances.html). 用几句话概括, 就是这样的:
+这个操作在 React 内部递归地进行, 文档中有对相关概念详细的[解释](https://reactjs.org/blog/2015/12/18/react-components-elements-and-instances.html). 用几句话概括, 就是这样:
 
 - **开发者**: `ReactDOM.render(<App />, domContainer)`
 - **React**: Hi, `<App>`, 你要渲染的是什么内容?
@@ -571,9 +572,9 @@ console.log((<Form />).type) // Form function
 
 ## 控制反转 Inversion of Control
 
-你可能会疑惑: 为什么不允许我们直接调用组件而要让 React 来做这个事情呢? 为什么要声明式得编写 `<Form/>` 而不是直接调用它呢 `Form()` ?
+你可能会疑惑: 为什么不允许我们直接调用组件而要让 React 来做这个事情呢? 为什么要声明式得编写 `<Form/>` 而不是直接调用它呢 `Form()`?
 
-**这是因为 React 如果知道你的组件树是怎样的, 就能够将这件事情完成地比我们更好.**
+**这是因为 React 处理这类问题, 能够处理地比我们更好(在知道你的组件树是怎样的情况下).**
 
 ```jsx
 // 🔴 因为是你负责调用这些组件, React 完全不知道 Layout 和 Article 的存在.
@@ -588,17 +589,17 @@ ReactDOM.render(
 )
 ```
 
-这是一个典型的[控制反转](https://en.wikipedia.org/wiki/Inversion_of_control)的例子. 让 React 来执行调用组件的操作, 我们还能发现一些有意思的东西:
+这是一个典型的[控制反转](https://en.wikipedia.org/wiki/Inversion_of_control)的例子. 让 React 来执行调用组件的操作, 我们还能发现一些有意思的事情:
 
-- **Component became more than functions.** React 能够扩展组件的功能, 例如给予组件存储内部状态的能力, <mark>React can augment component functions with features like local state that are tied to the component identity in the tree. Marked text</mark>一个良好的运行时能够针对所可能遇到的问题提供更多底层的抽象. 我们之前提到过, React 更适合用于实现 UI 渲染和用户交互的程序. 如果我们自己负责调用组件, 就比如自己来实现这些能力.
+- **组件的能力比单纯的函数更强大.** React 能够扩展组件的功能, 例如给予组件存储内部状态的能力, 一个良好的运行时能够提供更多底层的抽象, 用以解决可能产生的问题. 我们之前提到过, React 更适合用于实现 UI 渲染和用户交互的程序. 如果我们自己负责调用组件, 就必须自己来实现这些能力.
 
-- **协调的过程利用组件的类型做出了一些判断.** 让 React 来调用我们的组件, 我们能够更加直观地看出组件树本身的结构. 举个例子, 当你从 `<Feed>` 页面转到 `<Profile>` 页面的时候. React 不会尝试对其中的宿主实例进行复用 -- 其实和普通的标签渲染的过程没有区别. 组件内部所有的状态都会消失 -- 当两个组件的内容差异很大时, 这样的处理方式是十分合适的. 当我们我们从 `<PasswordForm>` 组件转到 `<MessengerChat>` 组件时, 一定不会希望其中状态依然保留, 即使 input 框在页面中的位置刚好一致.
+- **协调的过程利用组件的类型做出了一些判断.** 让 React 来调用我们的组件, 我们能够更加直观地看出组件树本身的结构. 举个例子, 当你从 `<Feed>` 页面转到 `<Profile>` 页面的时候. React 不会尝试对其中的宿主实例进行复用 -- 其实和普通的标签渲染的过程没有区别(就像之前 `<p>` 标签替换 `<button/>` 的情况一样). 同时组件内部所有的状态都会消失 -- 当两个组件的内容差异很大时, 这样的处理方式是十分合适的. 当我们我们从 `<PasswordForm>` 组件转到 `<MessengerChat>` 组件时, 一定不会希望其中的状态保留, 即使 input 框在页面中的位置刚好一致.
 
-- **React 会延迟协调的过程.** 如果 React 控制了调用组件的逻辑, 它就能够做出血多有意思的事情. 比如说, 它能够在两个组件被调用的间隙让浏览器做一些事情, 这样的话, 一个比较大的组件的重新渲染, 也[不会阻塞主线程中的任务](https://reactjs.org/blog/2018/03/01/sneak-peek-beyond-react-16.html). 用户如果希望手动实现这种优化, 会耗费很大的力气, 同时 React 本身也需要修改一大部分的内容.
+- **React 会延迟协调的过程.** 如果 React 控制了调用组件的逻辑, 就能够做出许多有意思的事情. 比如说, 它能够在两个组件被调用的间隙让浏览器做一些事情, 这样的话, 即使重新渲染的组件规模较大, 也[不会阻塞主线程中的任务](https://reactjs.org/blog/2018/03/01/sneak-peek-beyond-react-16.html). 用户如果希望手动实现这种优化, 会耗费很大的力气, 同时 React 本身也需要修改一大部分的内容.
 
 - **更好的调试体验.** React 能够直接与作为一等公民的组件进行交互, 因此我们可以实现功能更加丰富的[调试工具](https://github.com/facebook/react-devtools).
 
-React 负责调用组件带来的最后一个好处就是 _延迟计算_. 我们来看看这意味着什么.
+React 负责调用组件带来的最后一个好处就是 _延迟计算_. 现在来看看什么是延迟计算.
 
 ## 延迟计算
 
@@ -612,7 +613,7 @@ eat(
 )
 ```
 
-JavaScript 的开发者当然能够预期到这一点, 因为在 JavaScript 中, 函数会带来一些隐式的副作用. 想象这种情况, 如果我们调用了一个函数, 但是只有当它被使用的时候, 这部分代码才被真正执行, 大部分 JavaScript 开发者肯定都会觉得这个现象很奇怪.
+对于 JavaScript 开发者来说, 这是很合理的. 因为 JavaScript 函数可能会带来一些隐式的副作用. 想象这种情况, 如果我们调用了一个函数, 但是只有当它被使用的时候, 这部分代码才被真正执行, 大部分开发者肯定都会觉得这个现象很奇怪.
 
 React 组件[相对](https://overreacted.io/react-as-a-ui-runtime/#purity)来说是比较纯的函数. 并且很显而易见的一点是, 只有当需要在屏幕上渲染出内容的时候, 我们才需要调用这个函数.
 
@@ -649,7 +650,7 @@ function Page({ user, children }) {
 }
 ```
 
-(在 JSX 中, `<A><B /></A>` 与 `<A children={<B />}/>` 实际上是一样的.)
+*(在 JSX 中, `<A><B /></A>` 与 `<A children={<B />}/>` 实际上是一样的.)*
 
 但是如果有一些动态渲染其他内容的逻辑, React 会怎么处理呢?
 
@@ -698,15 +699,15 @@ function Page({ user, children }) {
 
 声明组件的方式, 使得 React 能够决定何时去调用组件. 如果我们的 `Page` 组件忽略了它的 `children` 属性, 然后渲染了 `<h1>Please log in</h1>`, React 就不会去调用 `Comment` 函数, 因为已经完全没有必要了.
 
-这样的方式带来了比较大的性能提升, 因为不仅避免了多余的渲染, 还使得代码更加的健壮. (当用户没有登录的情况下, 我们完全不需要理会 `Comments` 组件发生了什么, 因为它不可能被调用.)
+这样的方式能够带来比较大的性能提升, 因为不仅避免了多余的渲染, 还使得代码更加的健壮. (当用户没有登录的情况下, 我们完全不需要理会 `Comments` 组件发生了什么, 因为它不可能被调用.)
 
 ## 状态
 
 [先前](https://overreacted.io/react-as-a-ui-runtime/#reconciliation)我们提到了函数签名的问题, 还提到元素在树中的位置是如何影响 React 决定复用还是重新创建新的宿主实例的. 宿主实例可能会有多种状态: 聚焦(focus), 选择(selection), 输入(input)等. 我们希望, 更新前后在渲染同样的 UI 的情况下, 这个状态依然能够保留. 我们还希望, 在更新前后 UI 产生巨大变化的情况的下, 能够提前预测并销毁目标实例. (比如从 `<SignupForm>` 更新成 `<MessengerChat>` 的时候).
 
-**内部的状态十分重要, 因此 React 给了组件存储内部状态的能力.** 组件依然是函数, 不过 React 扩展了它们的功能, 这些功能对于 UI 的渲染来说, 是很有必要的. 存储状态就是这些有用的功能之一.
+**内部的状态十分重要, 因此 React 给了组件存储内部状态的能力.** 组件依然是函数, 不过 React 扩展了它们的功能, 这些功能对于 UI 的渲染来说, 是很有必要的. 存储状态就是这些功能之一.
 
-我们把这些扩充的能力, 叫做 _Hooks_ . `useState` 就是一个 Hook.
+我们把这些能力, 叫做 _Hooks_ . `useState` 就是一个 Hook.
 
 ```jsx
 function Example() {
@@ -741,7 +742,7 @@ function Example() {
 
 ## 缓存 Memoization
 
-当父节点开始通过调用 `setState` 来规划一次 UI 更新的时候, 默认情况下 React 会对这个父节点下的所有子节点进行协调的操作. 这是因为 React 不知道父节点的更新是否会影响它的子节点. 同时, React 的默认行为是保持一致性. 这样的更新方式听起来成本很大, 但其实在实际生产过程中, 对于规模较小或者是中等的子树, 都不是什么大问题.
+当父节点开始通过调用 `setState` 来规划一次 UI 更新的时候, 默认情况下 React 会对这个父节点下的所有子节点进行协调的操作. 这是因为 React 不知道父节点的更新是否会影响它的子节点. 同时, React 的默认行为是保持一致性. 这样的更新方式听起来成本很大, 但其实在实际生产过程中, 对于规模较小或者是中等的子树, 不是什么大问题.
 
 如果树的层级很深的话, 你可以告诉 React 把这些子树[缓存](https://en.wikipedia.org/wiki/Memoization)下来, 并且复用前一次渲染的结果, 前提是浅比较下 props 没有变化.
 
@@ -755,17 +756,17 @@ export default React.memo(Row)
 
 现在父组件中的 `<Table>` 中的 `setState` 会跳过对 `Row` 的协调, 因为它内部的 `item` 与上一次渲染时的 `item` 是同一个引用.
 
-我们还能够使用 [`useMemo` Hook](https://reactjs.org/docs/hooks-reference.html#usememo) 来实现更加细粒度的缓存操作. 缓存位于组件内部, 如果组件内部的状态消失, 缓存也会一同消失. <mark>It only holds one last item.</mark>
+我们还能够使用 [`useMemo` Hook](https://reactjs.org/docs/hooks-reference.html#usememo) 来实现更加细粒度的缓存操作. 缓存位于组件内部, 如果组件内部的状态消失, 缓存也会一同消失. 只有最后一次渲染的内容存在.
 
 React 内部默认不会对组件进行缓存. 一般情况下, 组件会接受很多 props, 因此缓存它们会是一个净损耗.
 
 ## Raw Models
 
-很讽刺的是, React 对于十分细粒度的更新并没有采取实时响应的方式(并不那么 reactive). <mark>In other words, any update at the top triggers reconciliation instead of updating just the components affected by changes.</mark>
+<mark>Ironically, React doesn’t use a “reactivity” system for fine-grained updates. In other words, any update at the top triggers reconciliation instead of updating just the components affected by changes.</mark>
 
-我们是刻意这样设计的. 在面向用户的 web 应用中, [可交互时间](https://calibreapp.com/blog/time-to-interactive)是一个关键性能指标, 遍历模型并且设置细粒度时间监听器的时间, 就相当于上述的可交互时间. 除此之外, 在许多应用中, <mark>交互所带来的更新: 比较小的是按钮 hover 这类的, 较大的则是页面的跳转.</mark>. 在这些场景下, 采取细粒度的响应方式其实会造成资源非必要的浪费.
+我们是刻意这样设计的. 在面向用户的 web 应用中, [可交互时间](https://calibreapp.com/blog/time-to-interactive)是一个关键性能指标, 遍历模型并且设置细粒度时间监听器的时间, 就相当于上述的可交互时间. 除此之外, 在许多应用中, 交互所带来的更新: 要么是比较小的更新(按钮 hover 这类的), 要么是较大的更新(页面的跳转这类的). 在这些场景下, 对细粒度的变化实时响应其实会造成资源非必要的浪费.
 
-React 中最核心的设计原则之一是: 它与 <mark>row data</mark> 进行交互. 如果你现在从网络请求中获取到一系列的 JavaScript 对象数据, 甚至可以不做任何预处理直接将它们扔到你的组件中. <mark>There are no gotchas about which properties you can access, or unexpected performance cliffs when a structure slightly changes. React rendering is O(view size) rather than O(model size), and you can significantly cut the view size with windowing.</mark>
+React 中最核心的设计原则之一是: 它与未经处理的数据(raw data)进行交互. 如果你现在从网络请求中获取到一系列的 JavaScript 对象数据, 甚至可以不做任何预处理直接将它们扔到你的组件中. <mark>There are no gotchas about which properties you can access, or unexpected performance cliffs when a structure slightly changes. React rendering is O(view size) rather than O(model size), and you can significantly cut the view size with windowing.</mark>
 
 当然, 还存在一些适合细粒度订阅更新的应用 -- 比如证券报价机. 这类需要实时更新的应用比较罕见, 它是其中之一. 对于这类应用, <mark>While imperative escape hatches can help optimize such code, React might not be the best fit for this use case. </mark> 尽管如此, 你还是可以基于 React 实现适合自己的细粒度订阅更新系统.
 
@@ -773,7 +774,7 @@ React 中最核心的设计原则之一是: 它与 <mark>row data</mark> 进行�
 
 ## 合并更新
 
-Several components may want to update state in response to the same event. This example is contrived but it illustrates a common pattern:
+我们可能会遇到这样的情况, 对于同一个事件, 有多个组件都需要更新状态以响应这一个事件. 以下是一个刻意设计用以阐述概念的例子, 但是类似的模式在实际生产中很常见.
 
 ```jsx
 function Parent() {
@@ -803,7 +804,7 @@ function Child() {
 如果 React 对于所有 `setState` 调用都立即重新渲染组件, 最终会造成子组件被渲染两次:
 
 ```jsx
-*** Entering React's browser click event handler ***
+*** 进入 React 针对点击事件的事件处理器 ***
 Child (onClick)
   - setState
   // highlight-next-line
@@ -813,23 +814,23 @@ Parent (onClick)
   - re-render Parent
   // highlight-next-line
   - re-render Child
-*** Exiting React's browser click event handler ***
+*** 退出 React 针对点击事件的事件处理器 ***
 ```
 
 第一次`Child`的渲染是完全没有必要的. 我们不能让 React 跳过第二次 `Child` 的渲染, 因为 `Parent` 状态更新引起的重新渲染或许会传递给 `Child` 一些不同的数据, 如果跳过的话会引起一些问题.
 
-**这也是为什么 React 会在事件处理器内部合并更新的原因:**
+**这也是 React 会在事件处理器内部合并更新的原因:**
 
 ```jsx
-*** Entering React's browser click event handler ***
+*** 进入 React 针对点击事件的事件处理器 ***
 Child (onClick)
   - setState
 Parent (onClick)
   - setState
-*** Processing state updates                     ***
+*** 响应状态的更新 ***
   - re-render Parent
   - re-render Child
-*** Exiting React's browser click event handler  ***
+*** 退出 React 针对点击事件的事件处理器 ***
 ```
 
 组件内部的 `setState` 调用不会立即引起重新渲染. 取而代之的是, React 会先执行所有的处理函数, 然后针对所有的更新执行一次页面的重新渲染.
@@ -886,11 +887,12 @@ function handleClick() {
 }
 ```
 
-`action` 参数可以是任何东西, 但是常见的方式是使用对象作为 `action` 参数的内容.
+`action` 参数可以是任何东西, 一般情况下会使用对象作为 `action` 参数的内容.
 
+MARK
 ## 调用树
 
-编程语言的运行时通常存在一个[调用栈](https://www.freecodecamp.org/news/understanding-the-javascript-call-stack-861e41ae61d4/). 当函数 `a()` 调用函数 `b()`, 函数 `b()` 调用函数 `c()` 的时候, 在 JavaScript 引擎中针对这种情况会存储类似 `[a, b, c]` 这样的数据结构, 在这里追踪你目前运行到了哪个位置, 接下来需要运行哪部分代码. <mark>Once you exit out of c, its call stack frame is gone — poof! It’s not needed anymore. We jump back into b. By the time we exit a, the call stack is empty.</mark> 一旦 `a` 执行结束之后, 它的调用栈就空了.
+编程语言的运行时通常存在一个[调用栈](https://www.freecodecamp.org/news/understanding-the-javascript-call-stack-861e41ae61d4/). 当函数 `a()` 调用函数 `b()`, 函数 `b()` 调用函数 `c()` 的时候, 在 JavaScript 引擎中针对这种情况会存储类似 `[a, b, c]` 这样的数据结构, 在这里追踪你目前运行到了哪个位置, 接下来需要运行哪部分代码. <mark>Once you exit out of c, its call stack frame is gone — poof! It’s not needed anymore. We jump back into b. </mark> 一旦 `a` 执行结束之后, 它的调用栈就空了.
 
 React 是基于 JavaScript 实现的, 因此遵循 JavaScript 的语法规则. 我们可以认为 React 内部维护了自己的调用栈, 以记录目前正在渲染的组件, 比如说 `[App, Page, Layout, Article /* 我们目前在这里 */].`
 
